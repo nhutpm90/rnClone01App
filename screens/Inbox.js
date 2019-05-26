@@ -74,13 +74,14 @@ export default class App extends Component {
   render() {
     return (
       <Container>
-        <Header>
-          <Body>
-            <Title>Inbox</Title>
+        <Header style={{ backgroundColor: "#FFFFFF"}}>
+          <Left style={{flex: 1}}></Left>
+          <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
+            <Title style={{color: "#1A1A1A"}}>Inbox</Title>
           </Body>
-          <Right>
+          <Right style={{flex: 1}}>
             <Button transparent onPress={() => alert('on press:: delete')}>
-              <Icon name="trash" />
+              <Icon name="trash" style={{color: "#000"}} />
             </Button>
           </Right>
         </Header>
