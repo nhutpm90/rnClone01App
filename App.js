@@ -1,49 +1,90 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
+import React from "react";
+import { StyleSheet, Text, View, Image } from "react-native";
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import { Root } from "native-base";
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+import { createAppContainer, createBottomTabNavigator } from "react-navigation";
+import Icon from "react-native-vector-icons/Ionicons";
 
-type Props = {};
-export default class App extends Component<Props> {
+import Home from "./screens/Home";
+import History from "./screens/History";
+import Payment from "./screens/Payment";
+import Inbox from "./screens/Inbox";
+import Account from "./screens/Account";
+
+const RootStack = createBottomTabNavigator(
+  {
+    Home: {
+      screen: Home,
+      navigationOptions: {
+        title: "HOME",
+        tabBarIcon: ({ horizontal, tintColor }) => (
+          <Icon name="ios-home" color={tintColor} size={24} />
+        )
+      }
+    },
+    History: {
+      screen: History,
+      navigationOptions: {
+        title: "HISTORY",
+        tabBarIcon: ({ horizontal, tintColor }) => (
+          <Icon name="ios-bookmark" color={tintColor} size={24} />
+        )
+      }
+    },
+    Payment: {
+      screen: Payment,
+      navigationOptions: {
+        title: "PAYMENT",
+        tabBarIcon: ({ horizontal, tintColor }) => (
+          <Icon name="ios-card" color={tintColor} size={24} />
+        )
+      }
+    },
+    Inbox: {
+      screen: Inbox,
+      navigationOptions: {
+        title: "INBOX",
+        tabBarIcon: ({ horizontal, tintColor }) => (
+          <Icon name="ios-chatboxes" color={tintColor} size={24} />
+        )
+      }
+    },
+    Account: {
+      screen: Account,
+      navigationOptions: {
+        title: "ACCOUNT",
+        tabBarIcon: ({ horizontal, tintColor }) => (
+          <Icon name="ios-person" color={tintColor} size={24} />
+        )
+      }
+    }
+  },
+  {
+    initialRouteName: "Inbox",
+    tabBarOptions: {
+      activeTintColor: "#00b14f",
+      inactiveTintColor: "#9a9a9a",
+      style: {
+        backgroundColor: "white",
+        borderTopWidth: 0,
+        shadowOffset: { width: 5, height: 3 },
+        shadowColor: "black",
+        shadowOpacity: 0.5,
+        elevation: 5
+      }
+    }
+  }
+);
+
+const AppContainer = createAppContainer(RootStack);
+
+export default class App extends React.Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
+      <Root>
+        <AppContainer />
+      </Root>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
