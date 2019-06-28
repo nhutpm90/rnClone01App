@@ -6,6 +6,7 @@ import { Root, Container, Header, Title, Content, Button, Icon, Left, Right, Bod
 
 import Boxes from './Boxes';
 import Orders from './Orders';
+import OrderDetail from './OrderDetail';
 
 const RootStack = createStackNavigator(
   {
@@ -14,6 +15,9 @@ const RootStack = createStackNavigator(
     },
     Orders: {
       screen: Orders,
+    },
+    OrderDetail: {
+      screen: OrderDetail,
     }
   },
   {

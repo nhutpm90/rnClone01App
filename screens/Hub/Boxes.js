@@ -1,10 +1,13 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration } from "react-native";
 
-import { Container, Header, Title, Subtitle, Content, 
-  Button, Icon, IconNB, Left, Right, Body, Footer, FooterTab, Badge } from "native-base";
+import { Container, Header, Title, Subtitle, Content, Item, Form, 
+  Text as TextNB, Input, Button, Icon as IconNB, Left, Right, Body, Footer, FooterTab, Badge, H3 } from "native-base";
 
 import { FloatingAction } from "react-native-floating-action";
+
+import CodeScanner from './components/CodeScanner';
+
 
 class BoxList extends Component {
 
@@ -72,14 +75,13 @@ class BoxList extends Component {
   }
 }
 
-
-
 export default class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-
+      showScanner: false,
+      qrData: '',
     };
 
     const ACTION_SCAN_DRIVER = "ACTION_SCAN_DRIVER";
@@ -136,7 +138,11 @@ export default class App extends Component {
     
     switch(name) {
       case ACTION_SCAN_DRIVER:
-        Alert.alert(`scan driver`);
+        // Alert.alert(`scan driver`);
+        this.setState({
+          qrData: '',
+          showScanner: true,
+        });
         break;
       case ACTION_PUT_INTO_SHELF:
         Alert.alert(`put into shelf`);
@@ -151,9 +157,73 @@ export default class App extends Component {
     }
   }
 
-  render() {
-    const { floatingButtons } = this.options;
+  _hideScanner = () => {
+    this.setState({showScanner: false});
+  }
 
+  _barcodeRecognized = (barcodes) => {
+    const firstCode  = barcodes[0];
+    const { data } = firstCode;
+
+    // console.warn("_barcodeRecognized:: " + JSON.stringify(barcodes));
+    this.setState({qrData: data});
+  }
+
+  _renderScanner = () => {
+    const { qrData } = this.state;
+    return (
+      <Container>
+        <Header style={{ backgroundColor: "#051B49"}}>
+          <Left style={{flex: 1}}>
+            <Button transparent onPress={this._hideScanner}>
+              <IconNB name="arrow-back" />
+            </Button>
+          </Left>
+          <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
+            <Title style={{color: "#FFF"}}>1.Quét mã QR</Title>
+          </Body>
+          <Right style={{flex: 1}}>
+          </Right>
+        </Header>
+
+        <View style={{flex: 1}}>
+          <View style={{flex: 1, overflow: 'hidden'}}>
+            <CodeScanner barcodeRecognized={this._barcodeRecognized}/>
+          </View>
+          <View>
+            <View style={{
+              // borderColor: 'red', 
+              // borderWidth: 1
+            }}>
+              <Text style={{fontSize: 17, color: "#000", paddingTop: 5, paddingLeft: 5}}>2. Hoặc</Text>
+            </View>
+            <Form>
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingRight: 5,
+                // borderColor: 'red',
+                // borderWidth: 1,
+              }}>
+                <Item style={{flex : 1}}>
+                  <Input placeholder='Nhập mã đơn hàng'>{qrData}</Input>
+                </Item>
+                <Item>
+                  <Button onPress={() => this.props.navigation.navigate('OrderDetail')}>
+                    <TextNB>Đồng ý</TextNB>
+                  </Button>
+                </Item>
+              </View>
+            </Form>
+          </View>
+        </View>
+      </Container>
+    );
+  }
+
+  _renderMainScreen = () => {
+    const { floatingButtons } = this.options;
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
@@ -177,5 +247,14 @@ export default class App extends Component {
         />
       </Container>
     );
+  }
+  
+  render() {
+    const { showScanner } = this.state;
+    if(showScanner) {
+      return this._renderScanner();
+    }
+    
+    return this._renderMainScreen();
   }
 }
