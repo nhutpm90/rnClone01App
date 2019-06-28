@@ -36,8 +36,8 @@ class OrderList extends Component {
           )}
           keyExtractor={(item, index) => item.id.toString()}
           renderItem={({ item, index }) => (
-            <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Orders')}>
-              <View style={{
+            <TouchableWithoutFeedback onPress={() => alert('on press:: id - '+ item.id)}>
+              <View style={{ 
                 flex: 1,
                 flexDirection: "row",
                 backgroundColor: "#FFFFFF",

@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert } from "react-native";
 
 import { Container, Header, Title, Subtitle, Content, 
   Button, Icon, IconNB, Left, Right, Body, Footer, FooterTab, Badge } from "native-base";
+
+import { FloatingAction } from "react-native-floating-action";
 
 class BoxList extends Component {
 
@@ -19,7 +21,7 @@ class BoxList extends Component {
       data.push({ ...dataTemplate, id: i, name: "C"+(i+1) });
     }
     return data;
-  }
+  } 
 
   render() {
     const data = this._getData();
@@ -70,52 +72,88 @@ class BoxList extends Component {
   }
 }
 
+
+
 export default class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      tab1: false,
-      tab2: false,
-      tab3: true,
-      tab4: false
+
+    };
+
+    const ACTION_SCAN_DRIVER = "ACTION_SCAN_DRIVER";
+    const ACTION_PUT_INTO_SHELF = "ACTION_PUT_INTO_SHELF";
+    const ACTION_SCAN_CUSTOMER = "ACTION_SCAN_CUSTOMER";
+    const ACTION_OTP = "ACTION_OTP";
+
+    this.options = {
+      ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP,
+      floatingButtons : [
+        {
+          position: 1,
+          text: "Quét mã tài xế",
+          color: "#B233E5",
+          textBackground: "#B233E5",
+          textColor: "#FFF",
+          icon: require("../../images/qr-code.png"),
+          name: ACTION_SCAN_DRIVER,
+        },
+        {
+          text: "Đặt vào kệ",
+          color: "#008CE1",
+          textBackground: "#008CE1",
+          textColor: "#FFF",
+          icon: require("../../images/qr-code.png"),
+          name: ACTION_PUT_INTO_SHELF,
+          position: 2
+        },
+        {
+          text: "Khách hàng",
+          color: "#00BF9D",
+          textBackground: "#00BF9D",
+          textColor: "#FFF",
+          icon: require("../../images/qr-code.png"),
+          name: ACTION_SCAN_CUSTOMER,
+          position: 3
+        },
+        {
+          text: "Nhập mã OTP",
+          color: "#FFC25F",
+          textBackground: "#FFC25F",
+          textColor: "#FFF",
+          icon: require("../../images/sms.png"),
+          name: ACTION_OTP,
+          position: 4
+        }
+      ]
     };
   }
 
-  toggleTab1() {
-    this.setState({
-      tab1: true,
-      tab2: false,
-      tab3: false,
-      tab4: false
-    });
-  }
-  toggleTab2() {
-    this.setState({
-      tab1: false,
-      tab2: true,
-      tab3: false,
-      tab4: false
-    });
-  }
-  toggleTab3() {
-    this.setState({
-      tab1: false,
-      tab2: false,
-      tab3: true,
-      tab4: false
-    });
-  }
-  toggleTab4() {
-    this.setState({
-      tab1: false,
-      tab2: false,
-      tab3: false,
-      tab4: true
-    });
+  _actionButtonPressed = (name) => {
+
+    var { ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP } = this.options;
+    
+    switch(name) {
+      case ACTION_SCAN_DRIVER:
+        Alert.alert(`scan driver`);
+        break;
+      case ACTION_PUT_INTO_SHELF:
+        Alert.alert(`put into shelf`);
+        break;
+      case ACTION_SCAN_CUSTOMER:
+        Alert.alert(`scan customer`);
+        break;
+      case ACTION_OTP:
+        Alert.alert(`otp`);
+        break;
+      default:
+    }
   }
 
   render() {
+    const { floatingButtons } = this.options;
+
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
@@ -124,12 +162,19 @@ export default class App extends Component {
             <Title style={{color: "#FFF"}}>iLogic SP-Vo Van Tan</Title>
           </Body>
           <Right style={{flex: 1}}>
-            
           </Right>
         </Header>
         <Content style={{ backgroundColor: "#E3E8EB" }}>
           <BoxList {...this.props} />
         </Content>
+
+        <FloatingAction
+          showBackground={false}
+          actions={floatingButtons}
+          position="right"
+          color="#F05553"
+          onPressItem={this._actionButtonPressed}
+        />
       </Container>
     );
   }
