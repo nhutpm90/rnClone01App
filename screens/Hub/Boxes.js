@@ -6,10 +6,19 @@ import { Container, Header, Title, Subtitle, Content, Item, Form,
 
 import { FloatingAction } from "react-native-floating-action";
 
+import AsyncStorage from "@react-native-community/async-storage";
+
 import CodeScanner from './components/CodeScanner';
 
+import OrderService from './services/OrderService';
+import AccountService from './services/AccountService';
 
 class BoxList extends Component {
+
+  constructor(props) {
+    super(props);
+    var self = this;
+  }
 
   _getData() {
     const data = [];
@@ -79,6 +88,7 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       showScanner: false,
       qrData: '',
