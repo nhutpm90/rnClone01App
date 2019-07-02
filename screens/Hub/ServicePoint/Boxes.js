@@ -6,16 +6,12 @@ import { Container, Header, Title, Subtitle, Content, Item, Form,
 
 import { FloatingAction } from "react-native-floating-action";
 
-import AsyncStorage from "@react-native-community/async-storage";
+import CodeScanner from '../components/CodeScanner';
 
-import CodeScanner from './components/CodeScanner';
+import OrderService from '../services/OrderService';
+import AccountService from '../services/AccountService';
 
-import OrderService from './services/OrderService';
-import AccountService from './services/AccountService';
-
-import HubService from './services/HubService';
-
-// import masterStore from './store/MasterStore';
+import HubService from '../services/HubService';
 
 class BoxList extends Component {
 
@@ -97,6 +93,10 @@ class BoxList extends Component {
 
 export default class App extends Component {
 
+  static navigationOptions = {
+    tabBarVisible: false,
+  }
+
   constructor(props) {
     super(props);
 
@@ -122,7 +122,7 @@ export default class App extends Component {
           color: "#B233E5",
           textBackground: "#B233E5",
           textColor: "#FFF",
-          icon: require("../../images/qr-code.png"),
+          icon: require("../../../images/qr-code.png"),
           name: ACTION_SCAN_DRIVER,
         },
         {
@@ -130,7 +130,7 @@ export default class App extends Component {
           color: "#008CE1",
           textBackground: "#008CE1",
           textColor: "#FFF",
-          icon: require("../../images/qr-code.png"),
+          icon: require("../../../images/qr-code.png"),
           name: ACTION_PUT_INTO_SHELF,
           position: 2
         },
@@ -139,7 +139,7 @@ export default class App extends Component {
           color: "#00BF9D",
           textBackground: "#00BF9D",
           textColor: "#FFF",
-          icon: require("../../images/qr-code.png"),
+          icon: require("../../../images/qr-code.png"),
           name: ACTION_SCAN_CUSTOMER,
           position: 3
         },
@@ -148,7 +148,7 @@ export default class App extends Component {
           color: "#FFC25F",
           textBackground: "#FFC25F",
           textColor: "#FFF",
-          icon: require("../../images/sms.png"),
+          icon: require("../../../images/sms.png"),
           name: ACTION_OTP,
           position: 4
         }
@@ -246,6 +246,7 @@ export default class App extends Component {
                 // borderWidth: 1,
               }}>
                 <Item style={{flex : 1}}>
+                  {/* <Text>ILG</Text> */}
                   <Input placeholder='Nhập mã đơn hàng'>{qrData}</Input>
                 </Item>
                 <Item>
@@ -291,13 +292,13 @@ export default class App extends Component {
   
   componentDidMount() {
     const self = this;
-    HubService.hubDetail('HQ3-01').then(response => {
-      const hub = response.data.data;
-      console.log(`hub detail ${JSON.stringify(hub)}`);
-      this.setState({ hub });
+    // HubService.hubDetail('HQ3-01').then(response => {
+    //   const hub = response.data.data;
+    //   console.log(`hub detail ${JSON.stringify(hub)}`);
+    //   this.setState({ hub });
 
-      self._showOrderDetail(); // debug code
-    });
+    //   self._showOrderDetail(); // debug code
+    // });
   }
 
   render() {

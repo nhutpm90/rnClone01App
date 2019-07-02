@@ -5,6 +5,7 @@ export default class Request {
   baseUrl = 'https://alpha.ilogic.vn:8080/auth';
   
   constructor() {
+    this.isAuth = true;
     this.contentType = "application/json";
   }
 
@@ -15,6 +16,11 @@ export default class Request {
 
   requestParams(params) {
     this.params = params;
+    return this;
+  }
+
+  authentication(isAuth) {
+    this.isAuth = isAuth;
     return this;
   }
 

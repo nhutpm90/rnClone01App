@@ -7,12 +7,19 @@ import { Container, Header, Title, Subtitle, Content, Item, Form,
 
 import _ from 'lodash';
 
-import CodeScanner from './components/CodeScanner';
+import CodeScanner from '../components/CodeScanner';
 
-import { DateTimeUtils } from './utils/Utils';
-import OrderService from './services/OrderService';
+import { DateTimeUtils } from '../utils/Utils';
+import OrderService from '../services/OrderService';
 
 export default class App extends Component {
+
+  static navigationOptions = ({ navigation }) => {
+    return {
+      tabBarVisible: false
+    };
+  };
+
   constructor(props) {
     super(props);
     

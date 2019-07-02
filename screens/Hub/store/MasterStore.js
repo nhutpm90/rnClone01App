@@ -1,4 +1,7 @@
+import _ from 'lodash';
+
 import User from './User';
+
 class Store {
     constructor() {
         
@@ -10,7 +13,7 @@ class Store {
         return this.user;
     }
     getAccessToken() {
-        return this.getUser()["credentials"]["access_token"];
+        return _.get(this.getUser(), "credentials.access_token");
     }
 }
 

@@ -36,14 +36,19 @@ const API = {
     if(accessToken == undefined) {
         accessToken = masterStore.getAccessToken();
     }
+    
+    const headers = {
+        'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
+    };
+    if(request.isAuth == true) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     console.log("doGet:: " + JSON.stringify(request));
     return axios.get(
         request.url, 
         {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
-            },
+            headers: headers,
             params: request.params
         }
     );
@@ -51,14 +56,18 @@ const API = {
 
   doPost(request) {
     console.log("doPost:: " + JSON.stringify(request));
+    const headers = {
+        'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
+    };
+    if(request.isAuth == true) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     return axios.post(
         request.url, 
         request.data, 
         {
-            headers: {
-                'Authorization': `Bearer ${masterStore.getAccessToken()}`,
-                'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
-            },
+            headers: headers,
             params: request.params
         });
   }

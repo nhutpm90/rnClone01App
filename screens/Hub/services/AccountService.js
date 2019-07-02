@@ -7,6 +7,14 @@ const AccountService = {
         return API.accessToken(new Request().fromUrl("/oauth/token"), username, password);
     },
 
+    hubAccountInfo(username) {
+        // https://alpha.ilogic.vn:8080/auth/hub/account/info?username=0909795262
+        return new Request().fromUrl(`/hub/account/info`)
+        .authentication(false)
+        .requestParams({ 
+            username: username
+        }).doGet();
+    }
     // accessToken(cb) {
     //     console.log("read accessToken");
     //     this.readUser(function(user) {

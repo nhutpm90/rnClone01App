@@ -1,25 +1,24 @@
-import React, { Component } from "react";
+import React from "react";
 
 import { createStackNavigator, createAppContainer } from "react-navigation";
 
-import { Root, Container, Header, Title, Content, Button, Icon, Left, Right, Body, Text, ListItem, List } from "native-base";
+import { Root } from "native-base";
 
-import masterStore from './store/MasterStore';
+import Login from './Login';
 
-import Boxes from './Boxes';
-import Orders from './Orders';
-import OrderDetail from './OrderDetail';
+import Boxes from './ServicePoint/Boxes';
+import Orders from './ServicePoint/Orders';
+import OrderDetail from './ServicePoint/OrderDetail';
 
-import AccountService from './services/AccountService';
-import OrderService from './services/OrderService';
-
-import AsyncStorage from "@react-native-community/async-storage";
-
+import ServicePointMain from "./ServicePoint/ServicePointMain";
 
 const RootStack = createStackNavigator(
   {
-    Boxes: {
-      screen: Boxes,
+    Login: {
+      screen: Login,
+    },
+    ServicePointMain: {
+      screen: ServicePointMain,
     },
     Orders: {
       screen: Orders,
@@ -29,24 +28,26 @@ const RootStack = createStackNavigator(
     }
   },
   {
-    initialRouteName: 'Boxes',
+    initialRouteName: 'Login',
     headerMode: 'none',
   }
 )
 
-const AppContainer = createAppContainer(RootStack);
+export default RootStack;
 
-export default class App extends React.Component {
+// const AppContainer = createAppContainer(RootStack);
 
-  constructor(props) {
-    super(props);
-  }
+// export default class App extends React.Component {
 
-  render() {
-    return (
-      <Root>
-        <AppContainer />
-      </Root>
-    );
-  }
-}
+//   constructor(props) {
+//     super(props);
+//   }
+
+//   render() {
+//     return (
+//       <Root>
+//         <AppContainer />
+//       </Root>
+//     );
+//   }
+// }

@@ -103,7 +103,6 @@ import AccountService from './screens/Hub/services/AccountService';
 import BookingMain from "./screens/Booking/BookingMain";
 import HubMain from "./screens/Hub/HubMain";
 
-
 const screens = ["BookingMain", "HubMain"];
 
 class MainScreen extends React.Component {
@@ -118,15 +117,15 @@ class MainScreen extends React.Component {
 
     // debug code start
     // sp Vo Van Tan
-    AccountService.login("0909795262", "123456").then(response => {
-    // sp Dien Bien Phu
-    // AccountService.login("0911111111", "123456").then(response => {
-    // sp Vung Tau
-    // AccountService.login("0938674470", "123456").then(response => {
-      const data = response.data;
-      masterStore.setUser(data);
-      self.props.navigation.navigate('HubMain');
-    });
+    // AccountService.login("0909795262", "123456").then(response => {
+    // // sp Dien Bien Phu
+    // // AccountService.login("0911111111", "123456").then(response => {
+    // // sp Vung Tau
+    // // AccountService.login("0938674470", "123456").then(response => {
+    //   const data = response.data;
+    //   masterStore.setUser(data);
+    //   self.props.navigation.navigate('HubMain');
+    // });
     // debug code end
   }
 
@@ -174,7 +173,7 @@ const RootStack = createStackNavigator(
     }
   },
   {
-    initialRouteName: 'MainScreen',
+    initialRouteName: 'HubMain',
     headerMode: 'none',
   }
 )
