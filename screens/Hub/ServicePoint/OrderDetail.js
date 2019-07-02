@@ -14,12 +14,6 @@ import OrderService from '../services/OrderService';
 
 export default class App extends Component {
 
-  static navigationOptions = ({ navigation }) => {
-    return {
-      tabBarVisible: false
-    };
-  };
-
   constructor(props) {
     super(props);
     

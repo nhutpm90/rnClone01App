@@ -73,8 +73,8 @@ export default class App extends Component {
         const accountInfo = data.data;
         AccountService.login(username, password).then(response => {
           console.log(`_authenticate:: login:: response['${JSON.stringify(response.data)}']`);
-          const data = response.data;
-          masterStore.setUser(data);
+          const credentials = response.data;
+          masterStore.setUser(accountInfo, credentials);
           self.props.navigation.navigate('ServicePointMain');
         }).catch(function (e) {
           const error = Object.assign({}, e);

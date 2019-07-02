@@ -13,6 +13,8 @@ import AccountService from '../services/AccountService';
 
 import HubService from '../services/HubService';
 
+import masterStore from '../store/MasterStore';
+
 class BoxList extends Component {
 
   constructor(props) {
@@ -40,6 +42,14 @@ class BoxList extends Component {
     return boxes;
   }
 
+  _ordersByBoxId = (boxId) => {
+    console.log(`_ordersByBoxId:: boxId['${boxId}']`);
+    const param = {
+      boxId: boxId,
+    };
+    this.props.navigation.navigate('Orders', param);
+  }
+
   render() {
     const data = this._getData();
 
@@ -56,7 +66,7 @@ class BoxList extends Component {
           )}
           keyExtractor={(item, index) => item.id.toString()}
           renderItem={({ item, index }) => (
-            <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Orders')}>
+            <TouchableWithoutFeedback onPress={() => this._ordersByBoxId(item.id)}>
               <View style={{
                 flex: 1,
                 flexDirection: "row",
@@ -292,13 +302,14 @@ export default class App extends Component {
   
   componentDidMount() {
     const self = this;
-    // HubService.hubDetail('HQ3-01').then(response => {
-    //   const hub = response.data.data;
-    //   console.log(`hub detail ${JSON.stringify(hub)}`);
-    //   this.setState({ hub });
+    const hubCode = masterStore.getUser().getHubCode();
+    HubService.hubDetail(hubCode).then(response => {
+      const hub = response.data.data;
+      console.log(`hub detail ${JSON.stringify(hub)}`);
+      this.setState({ hub });
 
-    //   self._showOrderDetail(); // debug code
-    // });
+      // self._showOrderDetail(); // debug code
+    });
   }
 
   render() {

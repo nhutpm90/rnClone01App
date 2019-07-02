@@ -6,8 +6,8 @@ class Store {
     constructor() {
         
     }
-    setUser(credentials) {
-        this.user = new User(credentials);
+    setUser(userInfo, credentials) {
+        this.user = new User(userInfo, credentials);
     }
     getUser() {
         return this.user;

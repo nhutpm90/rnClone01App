@@ -4,6 +4,10 @@ import { View, Text, FlatList, Image, TouchableWithoutFeedback } from "react-nat
 import { Container, Header, Title, Content, Button, Icon, Left, Right, Body, Text as NBText, 
   ListItem, List } from "native-base";
 
+import _ from 'lodash';
+
+import masterStore from '../store/MasterStore';
+
 const datas = [
   {
     route: "SP",
@@ -28,7 +32,15 @@ const datas = [
 ];
 
 export default class App extends Component {
+  constructor(props) {
+    super(props);
+    var self = this;
+  }
+  
   render() {
+    const { userInfo } = masterStore.getUser();
+    // console.log(`render account ${JSON.stringify(masterStore.getUser())}`);
+
     return (
       <Container>
         <Content>
@@ -49,8 +61,8 @@ export default class App extends Component {
                   flexDirection: "column",
                   justifyContent: "center",
                 }}>
-                  <NBText>Jon Snow</NBText>
-                  <Text>Edit Profile ></Text>
+                  <NBText>{_.get(userInfo, 'userName')}</NBText>
+                  {/* <Text>Edit Profile ></Text> */}
                 </View>
               </View>
             </TouchableWithoutFeedback>

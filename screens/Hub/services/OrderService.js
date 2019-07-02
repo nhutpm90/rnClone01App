@@ -14,6 +14,10 @@ const OrderService = {
         .requestParams({ code: orderCode })
         .doGet();
     },
+    ordersByBoxId(boxId) {
+        return new Request().fromUrl(`/box/${boxId}/orderInfo/list`)
+        .doGet();
+    },
     assignStamp(orderCode, stamp) {
         return new Request().fromUrl(`/stamp/${stamp}`)
         .requestParams({ orderCode: orderCode })
