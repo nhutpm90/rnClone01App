@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-community/async-storage";
+import moment from 'moment';
 
 const StorageUtils = {
   write(key, value) {
@@ -13,4 +14,10 @@ const StorageUtils = {
   }
 };
 
-export { StorageUtils };
+const DateTimeUtils = {
+  toFullDateFormat(time) {
+    return moment(time).format('DD-MM-YYYY HH:mm:ss');
+  },
+};
+
+export { StorageUtils, DateTimeUtils };

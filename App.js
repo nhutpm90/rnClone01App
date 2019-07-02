@@ -97,15 +97,39 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 
 import { Root, Container, Header, Title, Content, Button, Icon, Left, Right, Body, Text, ListItem, List } from "native-base";
 
+import masterStore from './screens/Hub/store/MasterStore';
+import AccountService from './screens/Hub/services/AccountService';
+
 import BookingMain from "./screens/Booking/BookingMain";
 import HubMain from "./screens/Hub/HubMain";
+
 
 const screens = ["BookingMain", "HubMain"];
 
 class MainScreen extends React.Component {
-  state = {
-    screens,
-  };
+  
+  constructor(props) {
+    super(props);
+    var self = this;
+
+    this.state = {
+      screens,
+    }
+
+    // debug code start
+    // sp Vo Van Tan
+    AccountService.login("0909795262", "123456").then(response => {
+    // sp Dien Bien Phu
+    // AccountService.login("0911111111", "123456").then(response => {
+    // sp Vung Tau
+    // AccountService.login("0938674470", "123456").then(response => {
+      const data = response.data;
+      masterStore.setUser(data);
+      self.props.navigation.navigate('HubMain');
+    });
+    // debug code end
+  }
+
 
   render() {
     return (
@@ -150,7 +174,7 @@ const RootStack = createStackNavigator(
     }
   },
   {
-    initialRouteName: 'HubMain',
+    initialRouteName: 'MainScreen',
     headerMode: 'none',
   }
 )

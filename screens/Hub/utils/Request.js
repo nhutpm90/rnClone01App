@@ -1,7 +1,5 @@
 import API from './API';
 
-import AccountService from './../services/AccountService';
-
 export default class Request {
   // baseUrl = 'http://jsonplaceholder.typicode.com';
   baseUrl = 'https://alpha.ilogic.vn:8080/auth';
@@ -21,11 +19,7 @@ export default class Request {
   }
 
   doGet() {
-    const self = this;
-    AccountService.accessToken(function(accessToken) {
-      self.accessToken = accessToken;
-      return API.doGet(self);
-    })
+    return API.doGet(this);
   }
 
   doPost() {

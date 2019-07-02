@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import masterStore from '../store/MasterStore';
+
 // used to capture http request in chrome debugger network tab
 GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
 
@@ -30,12 +32,16 @@ const API = {
     );
   },
 
-  doGet(request) {
+  doGet(request, accessToken) {
+    if(accessToken == undefined) {
+        accessToken = masterStore.getAccessToken();
+    }
     console.log("doGet:: " + JSON.stringify(request));
-    return axios.get(request.url, 
+    return axios.get(
+        request.url, 
         {
             headers: {
-                'Authorization': `Bearer ${request.accessToken}`,
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
             },
             params: request.params
@@ -45,20 +51,16 @@ const API = {
 
   doPost(request) {
     console.log("doPost:: " + JSON.stringify(request));
-
-    var clientInfo = "trusted-app" + ":" + "secret";
-    // var encoded = btoa(clientInfo);
-    var encoded = "dHJ1c3RlZC1hcHA6c2VjcmV0";
-
     return axios.post(
         request.url, 
-        request.params, {
-         headers: request.headers
-        })
-        .then(response => {
-            console.log("response " + JSON.stringify(response));
-        }
-    );
+        request.data, 
+        {
+            headers: {
+                'Authorization': `Bearer ${masterStore.getAccessToken()}`,
+                'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
+            },
+            params: request.params
+        });
   }
 };
 
