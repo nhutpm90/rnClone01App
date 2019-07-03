@@ -1,6 +1,6 @@
 import React from "react";
 
-import { createStackNavigator, createAppContainer } from "react-navigation";
+import { createStackNavigator, createAppContainer, createSwitchNavigator } from "react-navigation";
 
 import { Root } from "native-base";
 
@@ -12,28 +12,33 @@ import OrderDetail from './ServicePoint/OrderDetail';
 
 import ServicePointMain from "./ServicePoint/ServicePointMain";
 
-const RootStack = createStackNavigator(
-  {
-    Login: {
-      screen: Login,
-    },
-    ServicePointMain: {
-      screen: ServicePointMain,
-    },
-    Orders: {
-      screen: Orders,
-    },
-    OrderDetail: {
-      screen: OrderDetail,
-    }
-  },
-  {
-    initialRouteName: 'Login',
-    headerMode: 'none',
-  }
-)
+// const RootStack = createStackNavigator(
+//   {
+//     Login: {
+//       screen: Login,
+//     },
+//     ServicePointMain: {
+//       screen: ServicePointMain,
+//     },
+//     Orders: {
+//       screen: Orders,
+//     },
+//     OrderDetail: {
+//       screen: OrderDetail,
+//     }
+//   },
+//   {
+//     initialRouteName: 'Login',
+//     headerMode: 'none',
+//   }
+// )
 
-export default RootStack;
+const AppNavigator = createSwitchNavigator({
+  Login: Login,
+  ServicePointMain: ServicePointMain
+});
+
+export default AppNavigator;
 
 // const AppContainer = createAppContainer(RootStack);
 

@@ -219,6 +219,8 @@ export default class App extends Component {
           <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
             <Title style={{color: "#FFF"}}>1.Quét mã QR</Title>
           </Body>
+          <Right style={{flex: 1}}>
+          </Right>
         </Header>
 
         <View style={{flex: 1}}>
@@ -315,9 +317,6 @@ export default class App extends Component {
     return this._renderMainScreen();
   }
 }
-
-
-
 
 // {
 //   "success": true,

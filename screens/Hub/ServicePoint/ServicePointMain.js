@@ -3,13 +3,16 @@ import { StyleSheet, Text, View, Image } from "react-native";
 
 import { Root } from "native-base";
 
-import { createAppContainer, createBottomTabNavigator } from "react-navigation";
+import { createAppContainer, createBottomTabNavigator, createStackNavigator } from "react-navigation";
 import Icon from "react-native-vector-icons/Ionicons";
 
 import Home from "./Home";
 import Account from "./Account";
+import Boxes from './Boxes';
+import Orders from './Orders';
+import OrderDetail from './OrderDetail';
 
-const RootStack = createBottomTabNavigator(
+const rootTab = createBottomTabNavigator(
   {
     Home: {
       screen: Home,
@@ -46,6 +49,27 @@ const RootStack = createBottomTabNavigator(
     }
   }
 );
+
+const RootStack = createStackNavigator(
+  {
+    Boxes: {
+      screen: Boxes,
+    },
+    Orders: {
+      screen: Orders,
+    },
+    OrderDetail: {
+      screen: OrderDetail,
+    },
+    rootTab: {
+      screen: rootTab,
+    }
+  },
+  {
+    initialRouteName: 'rootTab',
+    headerMode: 'none',
+  }
+)
 
 export default RootStack;
 
