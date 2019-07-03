@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import CodeScanner from '../components/CodeScanner';
 
-import { DateTimeUtils } from '../utils/Utils';
+import { DateTimeUtils, LoggerUtils } from '../utils/Utils';
 import OrderService from '../services/OrderService';
 
 export default class App extends Component {
@@ -18,9 +18,9 @@ export default class App extends Component {
     super(props);
     
     const { navigation } = props;
-
     const orderCode = navigation.getParam('orderCode', '');
-    console.log(`init orderDetail:: orderCode['${orderCode}']`);
+
+    LoggerUtils.log('init OrderDetail', 'orderCode', orderCode);
 
     this.state = {
       orderCode,
@@ -31,6 +31,7 @@ export default class App extends Component {
   }
   
   componentDidMount() {
+    LoggerUtils.log('componentDidMount OrderDetail');
     this._refresh();
   }
 
@@ -38,16 +39,16 @@ export default class App extends Component {
     const firstCode  = barcodes[0];
     const { data } = firstCode;
 
-    // console.warn("_barcodeRecognized:: " + JSON.stringify(barcodes));
+    LoggerUtils.log('_barcodeRecognized', 'data', data);
     this.setState({qrData: data});
   }
 
   _showScanner = () => {
+    LoggerUtils.log('_showScanner');
     const self = this;
-    console.log(`_showScanner`);
     // debug code start
     OrderService.getAvailableStamp(function(stampId) {
-      console.log(`available stamp ${stampId}`);
+      LoggerUtils.log('getAvailableStamp', 'stampId', stampId);
       self.setState({ showScanner: true, qrData: stampId });
     });
     // debug code end
@@ -56,13 +57,14 @@ export default class App extends Component {
   }
 
   _hideScanner = () => {
-    console.log(`_hideScanner`);
+    LoggerUtils.log('_hideScanner');
     this.setState({ showScanner: false, scanAction: '' });
   }
 
   _assignStamp = () => {
     const { orderCode, qrData } = this.state;
-    console.log(`_assignStamp:: orderCode['${orderCode}'] - stamp['${qrData}']`);
+    LoggerUtils.log('_assignStamp', 'orderCode', orderCode, 'stamp', qrData);
+
     OrderService.assignStamp(orderCode, qrData).then(response => {
       this._refresh();
     });
@@ -71,6 +73,7 @@ export default class App extends Component {
   }
 
   _renderScanner = () => {
+    LoggerUtils.log('_renderScanner');
     const { qrData } = this.state;
     return (
       <Container>
@@ -125,25 +128,26 @@ export default class App extends Component {
 
   _refresh = () => {
     const { orderCode } = this.state;
-    console.log(`_refresh:: orderCode['${orderCode}']`);
+    LoggerUtils.log('_refresh', 'orderCode', orderCode);
     OrderService.orderDetailByOrderCode(orderCode).then(response => {
       const orderDetail = response.data.data;
-      console.log(`order detail ${JSON.stringify(orderDetail)}`);
+      LoggerUtils.log('orderDetailByOrderCode', 'orderDetail', JSON.stringify(orderDetail));
       this.setState({ orderDetail });
     });
   }
 
   _acceptOrder = () => {
     const { orderDetail } = this.state;
-
     const orderCode = _.get(orderDetail, "orderCode");
     const hubCode = _.get(orderDetail, "pickupHub.code");
-
-    console.log(`_acceptOrder:: orderCode['${orderCode}'] - hubCode['${hubCode}']`);
+    
+    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'hubCode', hubCode);
     OrderService.atHub(orderCode, hubCode);
   }
 
   _renderMainScreen = () => {
+    LoggerUtils.log('_renderMainScreen');
+
     const { orderDetail } = this.state;
 
     return (
@@ -324,6 +328,7 @@ export default class App extends Component {
 
   render() {
     const { showScanner } = this.state;
+    LoggerUtils.log('render OrderDetail', 'showScanner', showScanner);
     if(showScanner) {
       return this._renderScanner();
     }

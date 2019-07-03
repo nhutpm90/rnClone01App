@@ -1,9 +1,9 @@
-import { StorageUtils } from '../utils/Utils';
+import { StorageUtils, LoggerUtils } from '../utils/Utils';
 import _ from 'lodash';
 
 export default class User {
     constructor(userInfo, credentials) {
-        console.log(`init user:: userInfo:: ${JSON.stringify(userInfo)} - credentials:: ${JSON.stringify(credentials)}`);
+        LoggerUtils.log('init User', 'userInfo', JSON.stringify(userInfo), 'credentials', JSON.stringify(credentials));
         this.userInfo = userInfo;
         // {
         //     "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsib2F1dGgyX2lkIl0sInVzZXJfbmFtZSI6IjA5Mzg2NzQ0NzAiLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiZXhwIjoxNTYxOTY0ODQ2LCJhdXRob3JpdGllcyI6WyJST0xFX0xPR19NQU5BR0VSIiwiUk9MRV9IVUJfU1RBRkYiLCJST0xFX0RSSVZFUiIsIlJPTEVfVVNFUiJdLCJqdGkiOiI4ZGNkNzVkZS02ZGE2LTQ5YzEtOWJmMi0zZTViNDVmMWI0MDUiLCJjbGllbnRfaWQiOiJ0cnVzdGVkLWFwcCJ9.XAEBEdGnoy_iiWqfTkjTuHSgF6-pg2bW0-d8_fKDFG48SnRYqM6zLjyv7DEOO06r7fJZl8yrxJpTwr6WTswN8F00OzdvcYUnnWfXDJfwfzfd1XaynH4LBTq_ZQvTdXX3taYlYMl4M66rGvmqdGNdu88NQHPH3_9-XnHdXssn8akzvzSKdRrk8NI793D-kF0iM70LTG1VYBxsfbQ0GF3NxBWMCv_nKVUsS93EfXAZD8ZjDvJgDeI0wwJ_otiIg0Ytac7h89lBw-FtPjn6Xp91nkw0ucI-x13V3Ri8pSXBnLK_KhDGw-g1CvorD2TIP9o37m7w8Ud-fm_VLz7_wjGI8w",

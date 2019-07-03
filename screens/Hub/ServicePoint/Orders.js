@@ -5,31 +5,24 @@ import { Container, Header, Title, Subtitle, Content, Button, Icon, Left, Right,
 
 import _ from 'lodash';
 
+import { NavigationUtils, LoggerUtils } from '../utils/Utils';
+
 import OrderService from './../services/OrderService';
 
 class OrderList extends Component {
 
-  // _getData() {
-  //   const data = [];
-  //   const dataTemplate = {
-  //     id: "",
-  //     name: "Lorem ipsum dolor sit amet",
-  //     imageUrl: "https://cdn.dribbble.com/users/1236180/screenshots/4440250/shot.jpg",
-  //     description: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo"
-  //   };
-
-  //   for (var i = 0; i < 2; i++) {
-  //     data.push({ ...dataTemplate, id: i, name: "Order "+(i+1) });
-  //   }
-  //   return data;
-  // }
-
+  constructor(props) {
+    super(props);
+    LoggerUtils.log('init OrderList');
+  }
+  
   _getData() {
     const { orders } = this.props;
     return orders;
   }
 
   render() {
+    LoggerUtils.log('render OrderList');
     const data = this._getData();
 
     return (
@@ -84,9 +77,9 @@ export default class App extends Component {
     super(props);
     
     const { navigation } = props;
-
     const boxId = navigation.getParam('boxId', '');
-    console.log(`init orders:: boxId['${boxId}']`);
+
+    LoggerUtils.log('init Orders', 'boxId', boxId);
 
     this.state = {
       boxId,
@@ -95,15 +88,16 @@ export default class App extends Component {
   }
 
   componentDidMount() {
+    LoggerUtils.log('componentDidMount');
     this._refresh();
   }
 
   _refresh = () => {
     const { boxId } = this.state;
-    console.log(`_refresh:: boxId['${boxId}']`);
+    LoggerUtils.log('_refresh', 'boxId', boxId);
     OrderService.ordersByBoxId(boxId).then(response => {
-      console.log(`_refresh:: ordersByBoxId:: response['${JSON.stringify(response)}']`);
       const data = response.data;
+      LoggerUtils.log('ordersByBoxId', 'boxId', JSON.stringify(data));
       const success = data.success;
       if(success == true) {
         const box = data.data;
@@ -114,12 +108,15 @@ export default class App extends Component {
   }
 
   render() {
+    LoggerUtils.log('render Orders');
     const { orders } = this.state;
+    const { navigation } = this.props;
+
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
           <Left style={{flex: 1}}>
-            <Button transparent onPress={() => this.props.navigation.goBack()}>
+            <Button transparent onPress={() => NavigationUtils.goBack(navigation)}>
               <Icon name="arrow-back" />
             </Button>
           </Left>

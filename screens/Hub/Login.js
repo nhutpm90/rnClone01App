@@ -1,40 +1,26 @@
 import React, { Component } from "react";
 import { View, TouchableWithoutFeedback } from "react-native";
 
-import {
-  Container,
-  Header,
-  Title,
-  Content,
-  Button,
-  Item,
-  Label,
-  Input,
-  Body,
-  Left,
-  Right,
-  Icon,
-  IconNB,
-  Form,
-  Text,
-  Textarea,
-  Picker,
-  Toast
-} from "native-base";
+import { Container, Header, Title, Content, Button, Item, Label, Input, 
+  Body, Left, Right, Icon, IconNB, Form, Text, Textarea, Picker, Toast } from "native-base";
 
 import _ from 'lodash';
+
+import { LoggerUtils } from './utils/Utils';
+
 import AccountService from './services/AccountService';
 
 import masterStore from './store/MasterStore';
 
 export default class App extends Component {
   constructor(props) {
+    LoggerUtils.log('init Login');
     super(props);
 
     this.state = {
       error: "",
-      formData: { 
-        username: "", 
+      formData: {
+        username: "",
         password: "",
       },
     };
@@ -50,8 +36,9 @@ export default class App extends Component {
     const { formData } = this.state;
     const username = _.get(formData, "username");
     const password = _.get(formData, "password");
-
-    console.log(`_login:: username['${username}'] - password['${password}']`);
+    
+    LoggerUtils.log('_login', 'username', username, 'password', password);
+    
     if(username == undefined || username == '') {
       Toast.show({ text: "Nhập số điện thoại !", duration: 1000 });
       return;
@@ -64,20 +51,22 @@ export default class App extends Component {
   }
 
   _authenticate = (username, password) => {
+    LoggerUtils.log('_authenticate', 'username', username, 'password', password);
     const self = this;
     AccountService.hubAccountInfo(username).then(response => {
-      console.log(`_authenticate:: hubAccountInfo:: response['${JSON.stringify(response.data)}']`);
       const data = response.data;
+      LoggerUtils.log('_authenticate:: hubAccountInfo', 'data', JSON.stringify(data));
       const success = data.success;
       if(success == true) {
         const accountInfo = data.data;
         AccountService.login(username, password).then(response => {
-          console.log(`_authenticate:: login:: response['${JSON.stringify(response.data)}']`);
           const credentials = response.data;
+          LoggerUtils.log('_authenticate:: login', 'credentials', JSON.stringify(credentials));
           masterStore.setUser(accountInfo, credentials);
           self.props.navigation.navigate('ServicePointMain');
         }).catch(function (e) {
           const error = Object.assign({}, e);
+          LoggerUtils.log('_authenticate', 'error', JSON.stringify(error));
           const errorCode = _.get(error, 'response.status');
           if(errorCode == 400) {
             Toast.show({ text: "Tài khoản không hợp lệ", duration: 1000 });
@@ -90,6 +79,7 @@ export default class App extends Component {
   }
 
   render() {
+    LoggerUtils.log('render Login');
     return (
       <Container>
         <Form style={{
@@ -130,7 +120,6 @@ export default class App extends Component {
     );
   }
 }
-
 
 // {
 //   "success": true,

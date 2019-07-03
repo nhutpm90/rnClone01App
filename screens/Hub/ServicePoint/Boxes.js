@@ -6,6 +6,8 @@ import { Container, Header, Title, Subtitle, Content, Item, Form,
 
 import { FloatingAction } from "react-native-floating-action";
 
+import { NavigationUtils, LoggerUtils } from '../utils/Utils';
+
 import CodeScanner from '../components/CodeScanner';
 
 import OrderService from '../services/OrderService';
@@ -18,24 +20,10 @@ import masterStore from '../store/MasterStore';
 class BoxList extends Component {
 
   constructor(props) {
+    LoggerUtils.log('init BoxList');
     super(props);
     var self = this;
   }
-
-  // _getData() {
-  //   const data = [];
-  //   const dataTemplate = {
-  //     id: "",
-  //     name: "Lorem ipsum dolor sit amet",
-  //     imageUrl: "https://cdn.dribbble.com/users/1236180/screenshots/4440250/shot.jpg",
-  //     description: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo"
-  //   };
-
-  //   for (var i = 0; i < 25; i++) {
-  //     data.push({ ...dataTemplate, id: i, name: "C"+(i+1) });
-  //   }
-  //   return data;
-  // }
 
   _getData() {
     const { boxes } = this.props;
@@ -43,16 +31,18 @@ class BoxList extends Component {
   }
 
   _ordersByBoxId = (boxId) => {
-    console.log(`_ordersByBoxId:: boxId['${boxId}']`);
-    const param = {
-      boxId: boxId,
-    };
-    this.props.navigation.navigate('Orders', param);
+    LoggerUtils.log('_ordersByBoxId', 'boxId', boxId);
+    const { navigation } = this.props;
+    // const param = {
+    //   boxId: boxId,
+    // };
+    // this.props.navigation.navigate('Orders', param);
+    NavigationUtils.navigateToOrdersScreen(navigation, boxId);
   }
 
   render() {
+    LoggerUtils.log('render BoxList');
     const data = this._getData();
-
     return (
       <View style={{ flex: 1, }} >
         <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
@@ -103,11 +93,8 @@ class BoxList extends Component {
 
 export default class App extends Component {
 
-  static navigationOptions = {
-    tabBarVisible: false,
-  }
-
   constructor(props) {
+    LoggerUtils.log('init Boxes');
     super(props);
 
     this.state = {
@@ -167,7 +154,7 @@ export default class App extends Component {
   }
 
   _actionButtonPressed = (name) => {
-
+    LoggerUtils.log('_actionButtonPressed', 'action', name);
     var { ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP } = this.options;
     
     switch(name) {
@@ -199,6 +186,7 @@ export default class App extends Component {
   }
 
   _hideScanner = () => {
+    LoggerUtils.log('_hideScanner');
     this.setState({ showScanner: false, scanAction: '' });
   }
 
@@ -206,19 +194,19 @@ export default class App extends Component {
     const firstCode  = barcodes[0];
     const { data } = firstCode;
 
-    // console.warn("_barcodeRecognized:: " + JSON.stringify(barcodes));
+    LoggerUtils.log('_barcodeRecognized', 'data', data);
     this.setState({qrData: data});
   }
 
   _showOrderDetail = () => {
     const { qrData } = this.state;
-    const param = {
-      orderCode: qrData,
-    };
-    this.props.navigation.navigate('OrderDetail', param);
+    const { navigation } = this.props;
+    LoggerUtils.log('_showOrderDetail', 'orderCode', qrData);
+    NavigationUtils.navigateToOrderDetailScreen(navigation, qrData);
   }
 
   _renderScanner = () => {
+    LoggerUtils.log('_renderScanner');
     const { qrData } = this.state;
     return (
       <Container>
@@ -231,8 +219,6 @@ export default class App extends Component {
           <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
             <Title style={{color: "#FFF"}}>1.Quét mã QR</Title>
           </Body>
-          <Right style={{flex: 1}}>
-          </Right>
         </Header>
 
         <View style={{flex: 1}}>
@@ -272,7 +258,18 @@ export default class App extends Component {
     );
   }
 
+  _refresh = () => {
+    LoggerUtils.log('_refresh Boxes');
+    const hubCode = masterStore.getUser().getHubCode();
+    HubService.hubDetail(hubCode).then(response => {
+      const hub = response.data.data;
+      LoggerUtils.log('hubDetail', 'hub', JSON.stringify(hub));
+      this.setState({ hub });
+    });
+  }
+
   _renderMainScreen = () => {
+    LoggerUtils.log('_renderMainScreen');
     const { hub } = this.state;
     const { floatingButtons } = this.options;
     return (
@@ -283,6 +280,9 @@ export default class App extends Component {
             <Title style={{color: "#FFF"}}>{hub.name}</Title>
           </Body>
           <Right style={{flex: 1}}>
+            <Button transparent onPress={this._refresh} >
+              <IconNB name="refresh" />
+            </Button>
           </Right>
         </Header>
         <Content style={{ backgroundColor: "#E3E8EB" }}>
@@ -301,20 +301,14 @@ export default class App extends Component {
   }
   
   componentDidMount() {
-    const self = this;
-    const hubCode = masterStore.getUser().getHubCode();
-    HubService.hubDetail(hubCode).then(response => {
-      const hub = response.data.data;
-      console.log(`hub detail ${JSON.stringify(hub)}`);
-      this.setState({ hub });
-
-      // self._showOrderDetail(); // debug code
-    });
+    LoggerUtils.log('componentDidMount Boxes');
+    this._refresh();
   }
 
   render() {
     const { showScanner } = this.state;
-    if(showScanner) {
+    LoggerUtils.log('render Boxes', 'showScanner', showScanner);
+    if(showScanner) { 
       return this._renderScanner();
     }
     

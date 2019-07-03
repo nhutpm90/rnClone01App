@@ -1,4 +1,5 @@
 import axios from "axios";
+import { LoggerUtils } from './Utils'
 
 import masterStore from '../store/MasterStore';
 
@@ -8,8 +9,7 @@ GLOBAL.XMLHttpRequest = GLOBAL.originalXMLHttpRequest || GLOBAL.XMLHttpRequest;
 const API = {
 
   accessToken(request, username, password) {
-    console.log(`accessToken:: 
-        request['${JSON.stringify(request)}'] - username['${username}'] - password['${password}']`);
+    LoggerUtils.log('accessToken', 'request', JSON.stringify(request), 'username', username, 'password', password);
 
     var clientInfo = "trusted-app" + ":" + "secret";
     // var encoded = btoa(clientInfo);
@@ -44,7 +44,8 @@ const API = {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    console.log("doGet:: " + JSON.stringify(request));
+    LoggerUtils.log('doGet', 'request', JSON.stringify(request), 
+        'headers', JSON.stringify(headers));
     return axios.get(
         request.url, 
         {
@@ -55,7 +56,6 @@ const API = {
   },
 
   doPost(request) {
-    console.log("doPost:: " + JSON.stringify(request));
     const headers = {
         'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
     };
@@ -63,6 +63,8 @@ const API = {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    LoggerUtils.log('doPost', 'request', JSON.stringify(request), 
+        'headers', JSON.stringify(headers));
     return axios.post(
         request.url, 
         request.data, 

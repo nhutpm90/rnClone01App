@@ -8,38 +8,72 @@ import _ from 'lodash';
 
 import masterStore from '../store/MasterStore';
 
-const datas = [
-  {
-    route: "SP",
-    text: "iLogic SP - Vo Van Tan"
-  },
-  {
-    route: "qr",
-    text: "Mã QR"
-  },
-  {
-    route: "payment",
-    text: "Thông tin thanh toán"
-  },
-  {
-    route: "about",
-    text: "Về iLogic"
-  },
-  {
-    route: "Login",
-    text: "Đăng xuất"
-  },
-];
+import { NavigationUtils, LoggerUtils } from '../utils/Utils';
 
 export default class App extends Component {
   constructor(props) {
+    LoggerUtils.log('init Account');
     super(props);
     var self = this;
+
+    this.state = {
+      menuItems: this._getMenuItems()
+    };
   }
   
-  render() {
+  _getMenuItems() {
     const { userInfo } = masterStore.getUser();
-    // console.log(`render account ${JSON.stringify(masterStore.getUser())}`);
+
+    const hubName = _.get(userInfo, "hub.name");
+    const menuItems = [];
+    menuItems.push({
+      key: "Menu_Hub_Name",
+      text: hubName,
+    });
+    menuItems.push({
+      key: "Menu_QR",
+      text: "Mã QR",
+    });
+    menuItems.push({
+      key: "Menu_Payment",
+      text: "Thông tin thanh toán",
+    });
+    menuItems.push({
+      key: "Menu_About",
+      text: "Về iLogic",
+    });
+    menuItems.push({
+      key: "Menu_Logout",
+      text: "Đăng xuất",
+    });
+    return menuItems;
+  }
+
+  _onMenuItemClicked = ({ key }) => {
+    LoggerUtils.log('_onMenuItemClicked', 'key', key);
+    const { navigation } = this.props;
+    switch(key) {
+      case "Menu_Hub_Name":
+        NavigationUtils.navigateToHomeScreen(navigation);
+        break;
+      case "Menu_QR":
+        break;
+      case "Menu_Payment":
+        break;
+      case "Menu_About":
+        break;
+      case "Menu_Logout":
+        NavigationUtils.navigateToLoginScreen(navigation);
+        break;
+      default:
+        break;
+    }
+  }
+
+  render() {
+    LoggerUtils.log('render Account');
+    const { userInfo } = masterStore.getUser();
+    const { menuItems } = this.state;
 
     return (
       <Container>
@@ -68,11 +102,10 @@ export default class App extends Component {
             </TouchableWithoutFeedback>
             <View>
               <FlatList
-                data={datas}
+                data={menuItems}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item, index }) => (
-                  <ListItem button onPress={() => this.props.navigation.navigate(item.route)} >
-                  {/* <ListItem button onPress={() => alert('navigate to:: ' + item.route)} > */}
+                  <ListItem button onPress={() => this._onMenuItemClicked(item)} >
                     <Left>
                       <NBText>{item.text}</NBText>
                     </Left>
