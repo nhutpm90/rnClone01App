@@ -55,7 +55,10 @@ const API = {
     );
   },
 
-  doPost(request) {
+  doPost(request, accessToken) {
+    if(accessToken == undefined) {
+        accessToken = masterStore.getAccessToken();
+    }
     const headers = {
         'Content-type': "application/x-www-form-urlencoded; charset=utf-8"
     };

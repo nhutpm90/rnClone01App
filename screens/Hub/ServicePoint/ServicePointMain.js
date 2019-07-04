@@ -12,6 +12,8 @@ import Boxes from './Boxes';
 import Orders from './Orders';
 import OrderDetail from './OrderDetail';
 
+import CustomerScanner from './CustomerScanner';
+
 const rootTab = createBottomTabNavigator(
   {
     Home: {
@@ -50,7 +52,7 @@ const rootTab = createBottomTabNavigator(
   }
 );
 
-const RootStack = createStackNavigator(
+const MainStack = createStackNavigator(
   {
     Boxes: {
       screen: Boxes,
@@ -70,6 +72,22 @@ const RootStack = createStackNavigator(
     headerMode: 'none',
   }
 )
+
+const RootStack = createStackNavigator(
+  {
+    MainStack: {
+      screen: MainStack,
+    },
+    CustomerScanner: {
+      screen: CustomerScanner
+    },
+  },
+  {
+    initialRouteName: 'MainStack',
+    mode: 'modal',
+    headerMode: 'none',
+  }
+);
 
 export default RootStack;
 

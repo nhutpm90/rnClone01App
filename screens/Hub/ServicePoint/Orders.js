@@ -9,68 +9,6 @@ import { NavigationUtils, LoggerUtils } from '../utils/Utils';
 
 import OrderService from './../services/OrderService';
 
-class OrderList extends Component {
-
-  constructor(props) {
-    super(props);
-    LoggerUtils.log('init OrderList');
-  }
-  
-  _getData() {
-    const { orders } = this.props;
-    return orders;
-  }
-
-  render() {
-    LoggerUtils.log('render OrderList');
-    const data = this._getData();
-
-    return (
-      <View style={{ flex: 1, }} >
-        <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
-          data={data}
-          ItemSeparatorComponent={() => (
-            <View style={{ 
-              height: 0.5,
-              backgroundColor: "#DCE1E5",
-              marginHorizontal: 16
-            }} />
-          )}
-          keyExtractor={(item, index) => item.orderCode.toString()}
-          renderItem={({ item, index }) => (
-            <TouchableWithoutFeedback onPress={() => alert('on press:: orderCode - '+ item.orderCode)}>
-              <View style={{ 
-                flex: 1,
-                flexDirection: "row",
-                backgroundColor: "#FFFFFF",
-                paddingVertical: 6,
-              }} >
-                <View style={{ 
-                  flex: 1,
-                  justifyContent: "center",
-                  // backgroundColor: "yellow",
-                }} >
-                  <Text>Mã Đơn Hàng</Text>
-                  <Text>{`#${_.get(item, "orderCode")}`}</Text>
-                </View>
-                <View style={{ 
-                  flex: 1,
-                  justifyContent: "center",
-                  paddingHorizontal: 10,
-                  // backgroundColor: "blue",
-                }} >
-                  <Text>Trạng Thái</Text>
-                  <Text>{`${_.get(item, "orderStatus")}`}</Text>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          )}
-        />
-      </View>
-    );
-  }
-}
-
 export default class App extends Component {
 
   constructor(props) {
@@ -107,6 +45,12 @@ export default class App extends Component {
     });
   }
 
+  _onItemClicked = ({ orderCode }) => {
+    LoggerUtils.log('_onItemClicked', 'orderCode', orderCode);
+    const { navigation } = this.props;
+    NavigationUtils.navigateToOrderDetailScreen(navigation, orderCode);
+  }
+  
   render() {
     LoggerUtils.log('render Orders');
     const { orders } = this.state;
@@ -128,7 +72,47 @@ export default class App extends Component {
           </Right>
         </Header>
         <Content style={{ backgroundColor: "#E3E8EB" }}>
-          <OrderList {...this.props} orders={orders} />
+          <View style={{ flex: 1, }} >
+            <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
+              data={orders}
+              ItemSeparatorComponent={() => (
+                <View style={{ 
+                  height: 0.5,
+                  backgroundColor: "#DCE1E5",
+                  marginHorizontal: 16
+                }} />
+              )}
+              keyExtractor={(item, index) => item.orderCode.toString()}
+              renderItem={({ item, index }) => (
+                <TouchableWithoutFeedback onPress={() => this._onItemClicked(item)}>
+                  <View style={{ 
+                    flex: 1,
+                    flexDirection: "row",
+                    backgroundColor: "#FFFFFF",
+                    paddingVertical: 6,
+                  }} >
+                    <View style={{ 
+                      flex: 1,
+                      justifyContent: "center",
+                      // backgroundColor: "yellow",
+                    }} >
+                      <Text>Mã Đơn Hàng</Text>
+                      <Text>{`#${_.get(item, "orderCode")}`}</Text>
+                    </View>
+                    <View style={{ 
+                      flex: 1,
+                      justifyContent: "center",
+                      paddingHorizontal: 10,
+                      // backgroundColor: "blue",
+                    }} >
+                      <Text>Trạng Thái</Text>
+                      <Text>{`${_.get(item, "orderStatus")}`}</Text>
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              )}
+            />
+          </View>
         </Content>
       </Container>
     );

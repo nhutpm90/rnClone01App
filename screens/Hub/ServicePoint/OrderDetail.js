@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import CodeScanner from '../components/CodeScanner';
 
-import { DateTimeUtils, LoggerUtils } from '../utils/Utils';
+import { DateTimeUtils, LoggerUtils, NavigationUtils } from '../utils/Utils';
 import OrderService from '../services/OrderService';
 
 export default class App extends Component {
@@ -24,7 +24,7 @@ export default class App extends Component {
 
     this.state = {
       orderCode,
-      showScanner: false,
+      showStampScanner: false,
       qrData: '',
       // orderDetail: {}
     };
@@ -35,6 +35,83 @@ export default class App extends Component {
     this._refresh();
   }
 
+  componentWillMount() {
+    LoggerUtils.log('componentWillMount OrderDetail');
+  }
+
+  _refresh = () => {
+    const { orderCode } = this.state;
+    LoggerUtils.log('_refresh', 'orderCode', orderCode);
+    OrderService.orderDetailByOrderCode(orderCode).then(response => {
+      LoggerUtils.log('orderDetailByOrderCode', 'orderCode', orderCode, 'data', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        const orderDetail = _.get(response, 'data.data');
+        this.setState({ orderDetail });
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('_refresh OrderDetail:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+      }
+    });
+  }
+
+  _hideStampScanner = () => {
+    LoggerUtils.log('_hideStampScanner');
+    this.setState({ showStampScanner: false });
+  }
+
+  _showStampScanner = () => {
+    const { orderDetail } = this.state;
+    const orderCode = _.get(orderDetail, "orderCode");
+    
+    LoggerUtils.log('_showStampScanner', 'orderCode', orderCode);
+    this.setState({ showStampScanner: true})
+    
+    // debug code start
+    OrderService.getAvailableStamp((stampId) => {
+      LoggerUtils.log('getAvailableStamp', 'stampId', stampId);
+      this.setState({ qrData: stampId });
+    });
+    // debug code end
+  }
+
+  _acceptOrder = () => {
+    const { orderDetail } = this.state;
+    const orderCode = _.get(orderDetail, "orderCode");
+    const hubCode = _.get(orderDetail, "pickupHub.code");
+    
+    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'hubCode', hubCode);
+    OrderService.atHub(orderCode, hubCode).then(response => {
+      LoggerUtils.log('_acceptOrder:: atHub', 'data', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        this._refresh();
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('_acceptOrder:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+      }
+    });
+  }
+
+  render() {
+    const { showStampScanner } = this.state;
+    LoggerUtils.log('render OrderDetail', 'showStampScanner', showStampScanner);
+    if(showStampScanner) {
+      return this._renderStampScanner();
+    }
+    
+    return this._renderMainScreen();
+  }
+
+  _updateValue(field, text) {
+    LoggerUtils.log('_updateValue', field, text);
+    const newData = {};
+    newData[field] = text;
+    this.setState(newData);
+  }
+
   _barcodeRecognized = (barcodes) => {
     const firstCode  = barcodes[0];
     const { data } = firstCode;
@@ -43,56 +120,50 @@ export default class App extends Component {
     this.setState({qrData: data});
   }
 
-  _showScanner = () => {
-    LoggerUtils.log('_showScanner');
-    const self = this;
-    // debug code start
-    OrderService.getAvailableStamp(function(stampId) {
-      LoggerUtils.log('getAvailableStamp', 'stampId', stampId);
-      self.setState({ showScanner: true, qrData: stampId });
-    });
-    // debug code end
-
-    // this.setState({ showScanner: true, qrData: '' });
-  }
-
-  _hideScanner = () => {
-    LoggerUtils.log('_hideScanner');
-    this.setState({ showScanner: false, scanAction: '' });
-  }
-
   _assignStamp = () => {
     const { orderCode, qrData } = this.state;
     LoggerUtils.log('_assignStamp', 'orderCode', orderCode, 'stamp', qrData);
 
     OrderService.assignStamp(orderCode, qrData).then(response => {
-      this._refresh();
+      LoggerUtils.log('_assignStamp', 'data', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        this._hideStampScanner();
+        this._refresh();
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('_assignStamp:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+      }
     });
-
-    this._hideScanner();
   }
 
-  _renderScanner = () => {
-    LoggerUtils.log('_renderScanner');
+  _renderStampScanner() {
+    LoggerUtils.log('_renderStampScanner');
     const { qrData } = this.state;
+    const { navigation } = this.props;
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
           <Left style={{flex: 1}}>
-            <Button transparent onPress={this._hideScanner}>
+            <Button transparent onPress={this._hideStampScanner}>
               <IconNB name="arrow-back" />
             </Button>
           </Left>
           <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
-            <Title style={{color: "#FFF"}}>1.Quét mã QR</Title>
+            <Title style={{color: "#FFF"}}>1.Quét mã tem</Title>
           </Body>
           <Right style={{flex: 1}}>
+            <Button transparent onPress={ () => this.refs.codeScanner.toggleTorch() }>
+              <IconNB name="ios-flash" />
+            </Button>
           </Right>
         </Header>
 
         <View style={{flex: 1}}>
           <View style={{flex: 1, overflow: 'hidden'}}>
-            <CodeScanner barcodeRecognized={this._barcodeRecognized}/>
+            <CodeScanner ref="codeScanner"
+              barcodeRecognized={this._barcodeRecognized}/>
           </View>
           <View>
             <View style={{
@@ -111,7 +182,9 @@ export default class App extends Component {
                 // borderWidth: 1,
               }}>
                 <Item style={{flex : 1}}>
-                  <Input placeholder='Nhập mã tem'>{qrData}</Input>
+                  {/* <Text>ILG</Text> */}
+                  <Input placeholder='Nhập mã tem'
+                    onChangeText={text => this._updateValue("qrData", text)}>{qrData}</Input>
                 </Item>
                 <Item>
                   <Button onPress={this._assignStamp}>
@@ -126,26 +199,7 @@ export default class App extends Component {
     );
   }
 
-  _refresh = () => {
-    const { orderCode } = this.state;
-    LoggerUtils.log('_refresh', 'orderCode', orderCode);
-    OrderService.orderDetailByOrderCode(orderCode).then(response => {
-      const orderDetail = response.data.data;
-      LoggerUtils.log('orderDetailByOrderCode', 'orderDetail', JSON.stringify(orderDetail));
-      this.setState({ orderDetail });
-    });
-  }
-
-  _acceptOrder = () => {
-    const { orderDetail } = this.state;
-    const orderCode = _.get(orderDetail, "orderCode");
-    const hubCode = _.get(orderDetail, "pickupHub.code");
-    
-    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'hubCode', hubCode);
-    OrderService.atHub(orderCode, hubCode);
-  }
-
-  _renderMainScreen = () => {
+  _renderMainScreen() {
     LoggerUtils.log('_renderMainScreen');
 
     const { orderDetail } = this.state;
@@ -260,7 +314,7 @@ export default class App extends Component {
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
-                    <TouchableWithoutFeedback onPress={this._showScanner}>
+                    <TouchableWithoutFeedback onPress={this._showStampScanner}>
                       <IconNB name="qr-scanner" color="#000" size={24} />
                     </TouchableWithoutFeedback>
                   </View>
@@ -324,16 +378,6 @@ export default class App extends Component {
         </Footer>
       </Container>
     );
-  }
-
-  render() {
-    const { showScanner } = this.state;
-    LoggerUtils.log('render OrderDetail', 'showScanner', showScanner);
-    if(showScanner) {
-      return this._renderScanner();
-    }
-    
-    return this._renderMainScreen();
   }
 }
 

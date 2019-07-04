@@ -99,9 +99,6 @@ export default class App extends Component {
 
     this.state = {
       hub: {},
-      showScanner: false,
-      // qrData: '',
-      qrData: 'ILG004646', // debug code
       scanAction: '',
     };
 
@@ -155,109 +152,25 @@ export default class App extends Component {
 
   _actionButtonPressed = (name) => {
     LoggerUtils.log('_actionButtonPressed', 'action', name);
+
+    const { navigation } = this.props;
     var { ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP } = this.options;
     
     switch(name) {
       case ACTION_SCAN_DRIVER:
-        // Alert.alert(`scan driver`);
-        this.setState({
-          qrData: '',
-          showScanner: true,
-          scanAction: name,
-        });
+      Alert.alert(`put into shelf`);
         break;
       case ACTION_PUT_INTO_SHELF:
         Alert.alert(`put into shelf`);
         break;
       case ACTION_SCAN_CUSTOMER:
-        // Alert.alert(`scan customer`);
-        this.setState({
-          qrData: '',
-          showScanner: true,
-          scanAction: name,
-          qrData: 'ILG004641', // debug code
-        });
+        NavigationUtils.navigateToCustomerScannerScreen(navigation);
         break;
       case ACTION_OTP:
         Alert.alert(`otp`);
         break;
       default:
     }
-  }
-
-  _hideScanner = () => {
-    LoggerUtils.log('_hideScanner');
-    this.setState({ showScanner: false, scanAction: '' });
-  }
-
-  _barcodeRecognized = (barcodes) => {
-    const firstCode  = barcodes[0];
-    const { data } = firstCode;
-
-    LoggerUtils.log('_barcodeRecognized', 'data', data);
-    this.setState({qrData: data});
-  }
-
-  _showOrderDetail = () => {
-    const { qrData } = this.state;
-    const { navigation } = this.props;
-    LoggerUtils.log('_showOrderDetail', 'orderCode', qrData);
-    NavigationUtils.navigateToOrderDetailScreen(navigation, qrData);
-  }
-
-  _renderScanner = () => {
-    LoggerUtils.log('_renderScanner');
-    const { qrData } = this.state;
-    return (
-      <Container>
-        <Header style={{ backgroundColor: "#051B49"}}>
-          <Left style={{flex: 1}}>
-            <Button transparent onPress={this._hideScanner}>
-              <IconNB name="arrow-back" />
-            </Button>
-          </Left>
-          <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
-            <Title style={{color: "#FFF"}}>1.Quét mã QR</Title>
-          </Body>
-          <Right style={{flex: 1}}>
-          </Right>
-        </Header>
-
-        <View style={{flex: 1}}>
-          <View style={{flex: 1, overflow: 'hidden'}}>
-            <CodeScanner barcodeRecognized={this._barcodeRecognized}/>
-          </View>
-          <View>
-            <View style={{
-              // borderColor: 'red', 
-              // borderWidth: 1
-            }}>
-              <Text style={{fontSize: 17, color: "#000", paddingTop: 5, paddingLeft: 5}}>2. Hoặc</Text>
-            </View>
-            <Form>
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingRight: 5,
-                // borderColor: 'red',
-                // borderWidth: 1,
-              }}>
-                <Item style={{flex : 1}}>
-                  {/* <Text>ILG</Text> */}
-                  <Input placeholder='Nhập mã đơn hàng'>{qrData}</Input>
-                </Item>
-                <Item>
-                  <Button onPress={this._showOrderDetail}>
-                    <TextNB>Đồng ý</TextNB>
-                  </Button>
-                </Item>
-              </View>
-            </Form>
-          </View>
-        </View>
-      </Container>
-    );
   }
 
   _refresh = () => {
@@ -269,9 +182,14 @@ export default class App extends Component {
       this.setState({ hub });
     });
   }
+  
+  componentDidMount() {
+    LoggerUtils.log('componentDidMount Boxes');
+    this._refresh();
+  }
 
-  _renderMainScreen = () => {
-    LoggerUtils.log('_renderMainScreen');
+  render() {
+    LoggerUtils.log('render Boxes');
     const { hub } = this.state;
     const { floatingButtons } = this.options;
     return (
@@ -300,21 +218,6 @@ export default class App extends Component {
         />
       </Container>
     );
-  }
-  
-  componentDidMount() {
-    LoggerUtils.log('componentDidMount Boxes');
-    this._refresh();
-  }
-
-  render() {
-    const { showScanner } = this.state;
-    LoggerUtils.log('render Boxes', 'showScanner', showScanner);
-    if(showScanner) { 
-      return this._renderScanner();
-    }
-    
-    return this._renderMainScreen();
   }
 }
 

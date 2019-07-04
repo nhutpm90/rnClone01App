@@ -21,10 +21,11 @@ const DateTimeUtils = {
 };
 
 const LOGIN_SCREEN = "Login";
-const HOME_SCREEN = "Home";
+const HOME_SCREEN = "Boxes";
 const ACCOUNT_SCREEN = "Account";
 const ORDERS_SCREEN = "Orders";
 const ORDER_DETAIL_SCREEN = "OrderDetail";
+const CUSTOMER_SCANNER_SCREEN = "CustomerScanner";
 
 const NavigationUtils = {
   navigateToLoginScreen(navigation) {
@@ -42,7 +43,11 @@ const NavigationUtils = {
   navigateToOrderDetailScreen(navigation, orderCode) {
     this.navigateTo(navigation, ORDER_DETAIL_SCREEN, { orderCode: orderCode });
   },
+  navigateToCustomerScannerScreen(navigation) {
+    this.navigateTo(navigation, CUSTOMER_SCANNER_SCREEN);
+  },
   navigateTo(navigation, screen, params) {
+    LoggerUtils.log('navigateTo', 'screen', screen, 'params', JSON.stringify(params));
     navigation.navigate(screen, params);
   },
   goBack(navigation) {
@@ -51,12 +56,13 @@ const NavigationUtils = {
 };
 
 const SCREENS = {
-  LOGIN_SCREEN, HOME_SCREEN, ACCOUNT_SCREEN, ORDERS_SCREEN, ORDER_DETAIL_SCREEN
+  LOGIN_SCREEN, HOME_SCREEN, ACCOUNT_SCREEN, ORDERS_SCREEN, ORDER_DETAIL_SCREEN,
+  CUSTOMER_SCANNER_SCREEN
 };
 
 const LoggerUtils = {
   log(prefix, key1, param1, key2, param2, key3, param3) {
-    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '-' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? key3: ''}${param3 != undefined? '-' + param3: ''}`);
+    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? '-' + param3: ''}`);
   }
 };
 

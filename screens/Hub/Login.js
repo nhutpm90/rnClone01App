@@ -6,7 +6,7 @@ import { Container, Header, Title, Content, Button, Item, Label, Input,
 
 import _ from 'lodash';
 
-import { LoggerUtils } from './utils/Utils';
+import { NavigationUtils, LoggerUtils } from './utils/Utils';
 
 import AccountService from './services/AccountService';
 
@@ -26,7 +26,7 @@ export default class App extends Component {
     };
   }
 
-  _updateValue(text, field) {
+  _updateValue(field, text) {
     const { formData } = this.state;
     formData[field] = text;
     this.setState({ formData });
@@ -53,6 +53,7 @@ export default class App extends Component {
   _authenticate = (username, password) => {
     LoggerUtils.log('_authenticate', 'username', username, 'password', password);
     const self = this;
+    const { navigation } = this.props;
     AccountService.hubAccountInfo(username).then(response => {
       const data = response.data;
       LoggerUtils.log('_authenticate:: hubAccountInfo', 'data', JSON.stringify(data));
@@ -63,7 +64,11 @@ export default class App extends Component {
           const credentials = response.data;
           LoggerUtils.log('_authenticate:: login', 'credentials', JSON.stringify(credentials));
           masterStore.setUser(accountInfo, credentials);
-          self.props.navigation.navigate('ServicePointMain');
+          // self.props.navigation.navigate('ServicePointMain');
+
+          // debug code
+          NavigationUtils.navigateToHomeScreen(navigation);
+          // NavigationUtils.navigateToOrderDetailScreen(navigation, "ILG004660");
         }).catch(function (e) {
           const error = Object.assign({}, e);
           LoggerUtils.log('_authenticate', 'error', JSON.stringify(error));
@@ -78,6 +83,11 @@ export default class App extends Component {
     });
   }
 
+  componentDidMount() {
+    // debug code
+    this._authenticate("0909795262", "123456");
+  }
+
   render() {
     LoggerUtils.log('render Login');
     return (
@@ -90,12 +100,12 @@ export default class App extends Component {
         }} >
           <Item floatingLabel>
             <Label>Số điện thoại</Label>
-            <Input onChangeText={text => this._updateValue(text, "username")} />
+            <Input onChangeText={text => this._updateValue("username", text)} />
           </Item>
           <Item floatingLabel>
             <Label>Mật khẩu</Label>
             <Input secureTextEntry 
-              onChangeText={text => this._updateValue(text, "password")} />
+              onChangeText={text => this._updateValue("password", text)} />
           </Item>
           <Button block style={{ margin: 15, marginTop: 50 }}
             onPress={this._login}>
