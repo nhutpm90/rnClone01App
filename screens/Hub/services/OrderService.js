@@ -24,6 +24,11 @@ const OrderService = {
         return new Request().fromUrl(`/box/${boxId}/orderInfo/list`)
         .doGet();
     },
+    inboundOutboundOrders(hubCode, driverCode) {
+        LoggerUtils.log('OrderService:: inboundOutboundOrders', 'hubCode', hubCode, 'driverCode', driverCode);
+        return new Request().fromUrl(`/hub/${hubCode}/driver/${driverCode}`)
+        .doGet();
+    },
     assignStamp(orderCode, stamp) {
         LoggerUtils.log('OrderService:: assignStamp', 'orderCode', orderCode, 'stamp', stamp);
         return new Request().fromUrl(`/stamp/${stamp}`)

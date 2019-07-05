@@ -78,6 +78,7 @@ export default class App extends Component {
     return (
       <Container>
         <Content>
+        {/* <Content padder contentContainerStyle={{ flex: 1 }}> */}
           <View style={{
             flex: 1,
             flexDirection: "column",

@@ -26,6 +26,8 @@ const ACCOUNT_SCREEN = "Account";
 const ORDERS_SCREEN = "Orders";
 const ORDER_DETAIL_SCREEN = "OrderDetail";
 const CUSTOMER_SCANNER_SCREEN = "CustomerScanner";
+const DRIVER_SCANNER_SCREEN = "DriverScanner";
+const DRIVER_ORDERS_SCREEN = "DriverOrders";
 
 const NavigationUtils = {
   navigateToLoginScreen(navigation) {
@@ -46,6 +48,12 @@ const NavigationUtils = {
   navigateToCustomerScannerScreen(navigation) {
     this.navigateTo(navigation, CUSTOMER_SCANNER_SCREEN);
   },
+  navigateToDriverScannerScreen(navigation, hubCode) {
+    this.navigateTo(navigation, DRIVER_SCANNER_SCREEN, { hubCode: hubCode });
+  },
+  navigateToDriverOrdersScreen(navigation, hubCode, driverCode) {
+    this.navigateTo(navigation, DRIVER_ORDERS_SCREEN, { hubCode: hubCode, driverCode: driverCode });
+  },
   navigateTo(navigation, screen, params) {
     LoggerUtils.log('navigateTo', 'screen', screen, 'params', JSON.stringify(params));
     navigation.navigate(screen, params);
@@ -61,8 +69,8 @@ const SCREENS = {
 };
 
 const LoggerUtils = {
-  log(prefix, key1, param1, key2, param2, key3, param3) {
-    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? '-' + param3: ''}`);
+  log(prefix, key1, param1, key2, param2, key3, param3, key4, param4) {
+    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? ':: ' + param3: ''} ${key4 != undefined? '- ' + key4: ''}${param4 != undefined? ':: ' + param4: ''}`);
   }
 };
 

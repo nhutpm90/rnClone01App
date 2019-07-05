@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback,
+  ActivityIndicator, RefreshControl } from "react-native";
 
-import { Container, Header, Title, Subtitle, Content, Button, Icon, Left, Right, Body } from "native-base";
+import { Container, Header, Title, Subtitle, Content, Button, Icon as IconNB, Left, Right, Body } from "native-base";
 
 import _ from 'lodash';
 
@@ -20,6 +21,7 @@ export default class App extends Component {
     LoggerUtils.log('init Orders', 'boxId', boxId);
 
     this.state = {
+      refreshing: false,
       boxId,
       orders: []
     };
@@ -31,16 +33,22 @@ export default class App extends Component {
   }
 
   _refresh = () => {
+    this.setState({ refreshing: true });
     const { boxId } = this.state;
-    LoggerUtils.log('_refresh', 'boxId', boxId);
+    LoggerUtils.log('_refresh Orders', 'boxId', boxId);
+    
     OrderService.ordersByBoxId(boxId).then(response => {
-      const data = response.data;
-      LoggerUtils.log('ordersByBoxId', 'boxId', JSON.stringify(data));
-      const success = data.success;
-      if(success == true) {
-        const box = data.data;
+      LoggerUtils.log('ordersByBoxId', 'boxId', boxId, 'response', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        const box = _.get(response, 'data.data');
         const orders = box.orderCodes;
-        this.setState({ orders });
+        this.setState({ orders, refreshing: false });
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('ordersByBoxId:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+        this.setState({ refreshing: false });
       }
     });
   }
@@ -51,9 +59,14 @@ export default class App extends Component {
     NavigationUtils.navigateToOrderDetailScreen(navigation, orderCode);
   }
   
+  onRefresh() {
+    LoggerUtils.log("onRefresh Orders");
+    this._refresh();
+  }
+
   render() {
     LoggerUtils.log('render Orders');
-    const { orders } = this.state;
+    const { refreshing, orders } = this.state;
     const { navigation } = this.props;
 
     return (
@@ -61,14 +74,17 @@ export default class App extends Component {
         <Header style={{ backgroundColor: "#051B49"}}>
           <Left style={{flex: 1}}>
             <Button transparent onPress={() => NavigationUtils.goBack(navigation)}>
-              <Icon name="arrow-back" />
+              <IconNB name="arrow-back" />
             </Button>
           </Left>
           <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
             <Title style={{color: "#FFF"}}>Danh sách đơn hàng</Title>
+            {/* <Subtitle>Subtitle</Subtitle> */}
           </Body>
           <Right style={{flex: 1}}>
-            
+            <Button transparent onPress={this._refresh} >
+              <IconNB name="refresh" />
+            </Button>
           </Right>
         </Header>
         <Content style={{ backgroundColor: "#E3E8EB" }}>
@@ -82,6 +98,12 @@ export default class App extends Component {
                   marginHorizontal: 16
                 }} />
               )}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={this.onRefresh.bind(this)}
+                />
+              }
               keyExtractor={(item, index) => item.orderCode.toString()}
               renderItem={({ item, index }) => (
                 <TouchableWithoutFeedback onPress={() => this._onItemClicked(item)}>

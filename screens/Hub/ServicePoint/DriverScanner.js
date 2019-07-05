@@ -11,12 +11,16 @@ import CodeScanner from '../components/CodeScanner';
 export default class App extends Component {
 
   constructor(props) {
-    LoggerUtils.log('init Customer Scanner');
+    LoggerUtils.log('init Driver Scanner');
     super(props);
 
+    const { navigation } = props;
+    const hubCode = navigation.getParam('hubCode', '');
+
     this.state = {
+      hubCode,
       // qrData: '',
-      qrData: 'ILG004770', // debug code
+      qrData: 'ILG1809019', // debug code
     };
 
     this.options = {
@@ -39,19 +43,19 @@ export default class App extends Component {
     this.setState({ qrData: data});
   }
 
-  _showOrderDetail = () => {
-    const { qrData } = this.state;
+  _showDriverOrders = () => {
+    const { hubCode, qrData } = this.state;
     const { navigation } = this.props;
-    LoggerUtils.log('_showOrderDetail', 'orderCode', qrData);
-    NavigationUtils.navigateToOrderDetailScreen(navigation, qrData);
+    LoggerUtils.log('_showDriverOrders', 'hubCode', hubCode, 'driverCode', qrData);
+    NavigationUtils.navigateToDriverOrdersScreen(navigation, hubCode, qrData);
   }
   
   componentDidMount() {
-    LoggerUtils.log('componentDidMount Customer Scanner');
+    LoggerUtils.log('componentDidMount Driver Scanner');
   }
 
   render() {
-    LoggerUtils.log('render Customer Scanner');
+    LoggerUtils.log('render Driver Scanner');
     const { qrData } = this.state;
     const { navigation } = this.props;
     return (
@@ -63,7 +67,7 @@ export default class App extends Component {
             </Button>
           </Left>
           <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
-            <Title style={{color: "#FFF"}}>1.Quét mã đơn hàng</Title>
+            <Title style={{color: "#FFF"}}>1.Quét mã tài xế</Title>
           </Body>
           <Right style={{flex: 1}}>
             <Button transparent onPress={ () => this.refs.codeScanner.toggleTorch() }>
@@ -95,11 +99,11 @@ export default class App extends Component {
               }}>
                 <Item style={{flex : 1}}>
                   {/* <Text>ILG</Text> */}
-                  <Input placeholder='Nhập mã đơn hàng'
+                  <Input placeholder='Nhập mã tài xế'
                      onChangeText={text => this._updateValue("qrData", text)} >{qrData}</Input>
                 </Item>
                 <Item>
-                  <Button onPress={this._showOrderDetail}>
+                  <Button onPress={this._showDriverOrders}>
                     <TextNB>Đồng ý</TextNB>
                   </Button>
                 </Item>

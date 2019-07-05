@@ -13,6 +13,8 @@ import Orders from './Orders';
 import OrderDetail from './OrderDetail';
 
 import CustomerScanner from './CustomerScanner';
+import DriverScanner from './DriverScanner';
+import DriverOrders from './DriverOrders';
 
 const rootTab = createBottomTabNavigator(
   {
@@ -63,6 +65,9 @@ const MainStack = createStackNavigator(
     OrderDetail: {
       screen: OrderDetail,
     },
+    DriverOrders: {
+      screen: DriverOrders,
+    },
     rootTab: {
       screen: rootTab,
     }
@@ -80,6 +85,9 @@ const RootStack = createStackNavigator(
     },
     CustomerScanner: {
       screen: CustomerScanner
+    },
+    DriverScanner: {
+      screen: DriverScanner
     },
   },
   {

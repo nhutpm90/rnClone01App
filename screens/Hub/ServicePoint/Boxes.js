@@ -1,8 +1,11 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration,
+  ActivityIndicator, RefreshControl } from "react-native";
 
 import { Container, Header, Title, Subtitle, Content, Item, Form, 
   Text as TextNB, Input, Button, Icon as IconNB, Left, Right, Body, Footer, FooterTab, Badge, H3 } from "native-base";
+
+import _ from 'lodash';
 
 import { FloatingAction } from "react-native-floating-action";
 
@@ -17,80 +20,6 @@ import HubService from '../services/HubService';
 
 import masterStore from '../store/MasterStore';
 
-class BoxList extends Component {
-
-  constructor(props) {
-    LoggerUtils.log('init BoxList');
-    super(props);
-    var self = this;
-  }
-
-  _getData() {
-    const { boxes } = this.props;
-    return boxes;
-  }
-
-  _ordersByBoxId = (boxId) => {
-    LoggerUtils.log('_ordersByBoxId', 'boxId', boxId);
-    const { navigation } = this.props;
-    // const param = {
-    //   boxId: boxId,
-    // };
-    // this.props.navigation.navigate('Orders', param);
-    NavigationUtils.navigateToOrdersScreen(navigation, boxId);
-  }
-
-  render() {
-    LoggerUtils.log('render BoxList');
-    const data = this._getData();
-    return (
-      <View style={{ flex: 1, }} >
-        <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
-          data={data}
-          ItemSeparatorComponent={() => (
-            <View style={{ 
-              height: 0.5,
-              backgroundColor: "#DCE1E5",
-              marginHorizontal: 16
-            }} />
-          )}
-          keyExtractor={(item, index) => item.id.toString()}
-          renderItem={({ item, index }) => (
-            <TouchableWithoutFeedback onPress={() => this._ordersByBoxId(item.id)}>
-              <View style={{
-                flex: 1,
-                flexDirection: "row",
-                backgroundColor: "#FFFFFF",
-                paddingVertical: 6,
-              }} >
-                <View style={{ 
-                  flex: 2,
-                  justifyContent: "center",
-                  // backgroundColor: "yellow",
-                }} >
-                  <Text>{`${item.driverBooard} - ${item.code}`}</Text>
-                </View>
-                <View style={{ 
-                  flex: 1,
-                  justifyContent: "center",
-                  paddingHorizontal: 10,
-                  // backgroundColor: "blue",
-                }} >
-                  { 
-                    item.orderCodes.map((item, i) => (
-                      <Text key={item.orderCode}>{item.orderCode}</Text>
-                    )) 
-                  }
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          )}
-        />
-      </View>
-    );
-  }
-}
-
 export default class App extends Component {
 
   constructor(props) {
@@ -98,6 +27,7 @@ export default class App extends Component {
     super(props);
 
     this.state = {
+      refreshing: false,
       hub: {},
       scanAction: '',
     };
@@ -110,22 +40,31 @@ export default class App extends Component {
     this.options = {
       ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP,
       floatingButtons : [
+        // {
+        //   position: 1,
+        //   text: "Quét mã tài xế",
+        //   color: "#B233E5",
+        //   textBackground: "#B233E5",
+        //   textColor: "#FFF",
+        //   icon: require("../../../images/qr-code.png"),
+        //   name: ACTION_SCAN_DRIVER,
+        // },
+        // {
+        //   text: "Đặt vào kệ",
+        //   color: "#008CE1",
+        //   textBackground: "#008CE1",
+        //   textColor: "#FFF",
+        //   icon: require("../../../images/qr-code.png"),
+        //   name: ACTION_PUT_INTO_SHELF,
+        //   position: 2
+        // },
         {
-          position: 1,
           text: "Quét mã tài xế",
-          color: "#B233E5",
-          textBackground: "#B233E5",
-          textColor: "#FFF",
-          icon: require("../../../images/qr-code.png"),
-          name: ACTION_SCAN_DRIVER,
-        },
-        {
-          text: "Đặt vào kệ",
           color: "#008CE1",
           textBackground: "#008CE1",
           textColor: "#FFF",
           icon: require("../../../images/qr-code.png"),
-          name: ACTION_PUT_INTO_SHELF,
+          name: ACTION_SCAN_DRIVER,
           position: 2
         },
         {
@@ -153,15 +92,14 @@ export default class App extends Component {
   _actionButtonPressed = (name) => {
     LoggerUtils.log('_actionButtonPressed', 'action', name);
 
+    const hubCode = masterStore.getUser().getHubCode();
+    
     const { navigation } = this.props;
     var { ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP } = this.options;
     
     switch(name) {
       case ACTION_SCAN_DRIVER:
-      Alert.alert(`put into shelf`);
-        break;
-      case ACTION_PUT_INTO_SHELF:
-        Alert.alert(`put into shelf`);
+        NavigationUtils.navigateToDriverScannerScreen(navigation, hubCode);
         break;
       case ACTION_SCAN_CUSTOMER:
         NavigationUtils.navigateToCustomerScannerScreen(navigation);
@@ -173,13 +111,34 @@ export default class App extends Component {
     }
   }
 
+  _ordersByBoxId = (boxId) => {
+    LoggerUtils.log('_ordersByBoxId', 'boxId', boxId);
+    const { navigation } = this.props;
+    NavigationUtils.navigateToOrdersScreen(navigation, boxId);
+  }
+
+  onRefresh() {
+    LoggerUtils.log("onRefresh Boxes");
+    this._refresh();
+  }
+
   _refresh = () => {
-    LoggerUtils.log('_refresh Boxes');
+    this.setState({ refreshing: true });
+
     const hubCode = masterStore.getUser().getHubCode();
+    LoggerUtils.log('_refresh Boxes', 'hubCode', hubCode);
     HubService.hubDetail(hubCode).then(response => {
-      const hub = response.data.data;
-      LoggerUtils.log('hubDetail', 'hub', JSON.stringify(hub));
-      this.setState({ hub });
+      LoggerUtils.log('hubDetail', 'hubCode', hubCode, 'response', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        const hub = _.get(response, 'data.data');
+        this.setState({ hub, refreshing: false });
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('hubDetail:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+        this.setState({ refreshing: false });
+      }
     });
   }
   
@@ -190,8 +149,11 @@ export default class App extends Component {
 
   render() {
     LoggerUtils.log('render Boxes');
-    const { hub } = this.state;
+    const { refreshing, hub } = this.state;
+    const { boxes } = hub;
+
     const { floatingButtons } = this.options;
+
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
@@ -206,7 +168,55 @@ export default class App extends Component {
           </Right>
         </Header>
         <Content style={{ backgroundColor: "#E3E8EB" }}>
-          <BoxList {...this.props} boxes={hub.boxes} />
+          <View style={{ flex: 1, }} >
+            <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
+              data={boxes}
+              ItemSeparatorComponent={() => (
+                <View style={{ 
+                  height: 0.5,
+                  backgroundColor: "#DCE1E5",
+                  marginHorizontal: 16
+                }} />
+              )}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={this.onRefresh.bind(this)}
+                />
+              }
+              keyExtractor={(item, index) => item.id.toString()}
+              renderItem={({ item, index }) => (
+                <TouchableWithoutFeedback onPress={() => this._ordersByBoxId(item.id)}>
+                  <View style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    backgroundColor: "#FFFFFF",
+                    paddingVertical: 6,
+                  }} >
+                    <View style={{ 
+                      flex: 2,
+                      justifyContent: "center",
+                      // backgroundColor: "yellow",
+                    }} >
+                      <Text>{`${item.driverBooard} - ${item.code}`}</Text>
+                    </View>
+                    <View style={{ 
+                      flex: 1,
+                      justifyContent: "center",
+                      paddingHorizontal: 10,
+                      // backgroundColor: "blue",
+                    }} >
+                      { 
+                        item.orderCodes.map((item, i) => (
+                          <Text key={item.orderCode}>{item.orderCode}</Text>
+                        )) 
+                      }
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              )}
+            />
+          </View>
         </Content>
 
         <FloatingAction
