@@ -57,6 +57,10 @@ export default class App extends Component {
         NavigationUtils.navigateToHomeScreen(navigation);
         break;
       case "Menu_QR":
+        const { userInfo } = masterStore.getUser();
+        const title = _.get(userInfo, "hub.name");
+        const data = masterStore.getUser().getHubCode();
+        NavigationUtils.navigateToQRCodeGeneratorScreen(navigation, title, data);
         break;
       case "Menu_Payment":
         break;

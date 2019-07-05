@@ -28,6 +28,7 @@ const ORDER_DETAIL_SCREEN = "OrderDetail";
 const CUSTOMER_SCANNER_SCREEN = "CustomerScanner";
 const DRIVER_SCANNER_SCREEN = "DriverScanner";
 const DRIVER_ORDERS_SCREEN = "DriverOrders";
+const QRCODE_GENERATOR_SCREEN = "QRCodeGenerator";
 
 const NavigationUtils = {
   navigateToLoginScreen(navigation) {
@@ -54,6 +55,9 @@ const NavigationUtils = {
   navigateToDriverOrdersScreen(navigation, hubCode, driverCode) {
     this.navigateTo(navigation, DRIVER_ORDERS_SCREEN, { hubCode: hubCode, driverCode: driverCode });
   },
+  navigateToQRCodeGeneratorScreen(navigation, title, data) {
+    this.navigateTo(navigation, QRCODE_GENERATOR_SCREEN, { title: title, data: data });
+  },
   navigateTo(navigation, screen, params) {
     LoggerUtils.log('navigateTo', 'screen', screen, 'params', JSON.stringify(params));
     navigation.navigate(screen, params);
@@ -65,12 +69,14 @@ const NavigationUtils = {
 
 const SCREENS = {
   LOGIN_SCREEN, HOME_SCREEN, ACCOUNT_SCREEN, ORDERS_SCREEN, ORDER_DETAIL_SCREEN,
-  CUSTOMER_SCANNER_SCREEN
+  CUSTOMER_SCANNER_SCREEN, DRIVER_SCANNER_SCREEN, DRIVER_ORDERS_SCREEN,
+  QRCODE_GENERATOR_SCREEN
 };
 
+
 const LoggerUtils = {
-  log(prefix, key1, param1, key2, param2, key3, param3, key4, param4) {
-    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? ':: ' + param3: ''} ${key4 != undefined? '- ' + key4: ''}${param4 != undefined? ':: ' + param4: ''}`);
+  log(prefix, key1, param1, key2, param2, key3, param3, key4, param4, key5, param5) {
+    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? ':: ' + param3: ''} ${key4 != undefined? '- ' + key4: ''}${param4 != undefined? ':: ' + param4: ''} ${key5 != undefined? '- ' + key5: ''}${param5 != undefined? ':: ' + param5: ''}`);
   }
 };
 

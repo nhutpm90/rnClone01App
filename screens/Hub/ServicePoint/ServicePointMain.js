@@ -16,6 +16,8 @@ import CustomerScanner from './CustomerScanner';
 import DriverScanner from './DriverScanner';
 import DriverOrders from './DriverOrders';
 
+import QRCodeGenerator from '../components/QRCodeGenerator';
+
 const rootTab = createBottomTabNavigator(
   {
     Home: {
@@ -88,6 +90,9 @@ const RootStack = createStackNavigator(
     },
     DriverScanner: {
       screen: DriverScanner
+    },
+    QRCodeGenerator: {
+      screen: QRCodeGenerator
     },
   },
   {
