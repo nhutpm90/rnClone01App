@@ -68,7 +68,7 @@ export default class App extends Component {
           position: 2
         },
         {
-          text: "Khách hàng",
+          text: "Đơn hàng",
           color: "#00BF9D",
           textBackground: "#00BF9D",
           textColor: "#FFF",
@@ -92,20 +92,20 @@ export default class App extends Component {
   _actionButtonPressed = (name) => {
     LoggerUtils.log('_actionButtonPressed', 'action', name);
 
-    const hubCode = masterStore.getUser().getHubCode();
+    const { hub } = this.state; 
     
     const { navigation } = this.props;
     var { ACTION_SCAN_DRIVER, ACTION_PUT_INTO_SHELF, ACTION_SCAN_CUSTOMER, ACTION_OTP } = this.options;
     
     switch(name) {
       case ACTION_SCAN_DRIVER:
-        NavigationUtils.navigateToDriverScannerScreen(navigation, hubCode);
+        NavigationUtils.navigateToDriverScannerScreen(navigation, hub);
         break;
       case ACTION_SCAN_CUSTOMER:
         NavigationUtils.navigateToCustomerScannerScreen(navigation);
         break;
       case ACTION_OTP:
-        Alert.alert(`otp`);
+        NavigationUtils.navigateToInputOTPScreen(navigation, hub);
         break;
       default:
     }
@@ -132,6 +132,12 @@ export default class App extends Component {
       if(_.get(response, 'data.success') == true) {
         const hub = _.get(response, 'data.data');
         this.setState({ hub, refreshing: false });
+        // debug code begin
+        NavigationUtils.navigateToInputOTPScreen(this.props.navigation, hub);
+
+        // const driverCode = "ILG1809019";
+        // NavigationUtils.navigateToDriverOrdersScreen(this.props.navigation, hub, driverCode);
+        // debug code end
       } else {
         const data = _.get(response, 'data.data');
         const errorCode = _.get(data, 'errorCode');
@@ -167,7 +173,13 @@ export default class App extends Component {
             </Button>
           </Right>
         </Header>
-        <Content style={{ backgroundColor: "#E3E8EB" }}>
+        <Content style={{ backgroundColor: "#E3E8EB" }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={this.onRefresh.bind(this)}
+            />
+          }>
           <View style={{ flex: 1, }} >
             <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
               data={boxes}
@@ -178,12 +190,6 @@ export default class App extends Component {
                   marginHorizontal: 16
                 }} />
               )}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={this.onRefresh.bind(this)}
-                />
-              }
               keyExtractor={(item, index) => item.id.toString()}
               renderItem={({ item, index }) => (
                 <TouchableWithoutFeedback onPress={() => this._ordersByBoxId(item.id)}>

@@ -6,11 +6,21 @@ export default class Request {
   
   constructor() {
     this.isAuth = true;
-    this.contentType = "application/json";
+    // this.contentType = "application/json";
   }
 
   fromUrl(url) {
     this.url = this.baseUrl + url;
+    return this;
+  }
+
+  withContentType(contentType) {
+    this.contentType = contentType;
+    return this;
+  }
+
+  requestBody(data) {
+    this.data = data;
     return this;
   }
 

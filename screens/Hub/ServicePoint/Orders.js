@@ -66,9 +66,12 @@ export default class App extends Component {
 
   render() {
     LoggerUtils.log('render Orders');
-    const { refreshing, orders } = this.state;
+    let { refreshing, orders } = this.state;
     const { navigation } = this.props;
 
+    // if(orders != undefined && orders != null && orders.length >0) {
+    //   orders = [orders[0], orders[1]];
+    // }
     return (
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
@@ -87,8 +90,13 @@ export default class App extends Component {
             </Button>
           </Right>
         </Header>
-        <Content style={{ backgroundColor: "#E3E8EB" }}>
-          <View style={{ flex: 1, }} >
+        <Content style={{ backgroundColor: "#E3E8EB" }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={this.onRefresh.bind(this)}
+            />
+          }>
             <FlatList contentContainerStyle={{margin: 16, backgroundColor: '#FFFFFF'}}
               data={orders}
               ItemSeparatorComponent={() => (
@@ -98,12 +106,7 @@ export default class App extends Component {
                   marginHorizontal: 16
                 }} />
               )}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={this.onRefresh.bind(this)}
-                />
-              }
+              
               keyExtractor={(item, index) => item.orderCode.toString()}
               renderItem={({ item, index }) => (
                 <TouchableWithoutFeedback onPress={() => this._onItemClicked(item)}>
@@ -134,7 +137,6 @@ export default class App extends Component {
                 </TouchableWithoutFeedback>
               )}
             />
-          </View>
         </Content>
       </Container>
     );

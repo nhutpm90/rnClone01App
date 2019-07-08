@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
-import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration } from "react-native";
+import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration,
+  ActivityIndicator, RefreshControl } from "react-native";
 
 import { Container, Header, Title, Subtitle, Content, Item, Form, 
   Text as TextNB, Input, Button, Icon as IconNB, Left, Right, Body, Footer, FooterTab, Badge, H3, ActionSheet } from "native-base";
@@ -21,11 +22,14 @@ export default class App extends Component {
     
     const { navigation } = props;
     const orderCode = navigation.getParam('orderCode', '');
-
+    const deliverFlag = navigation.getParam('deliverFlag', false);
+    
     LoggerUtils.log('init OrderDetail', 'orderCode', orderCode);
 
     this.state = {
+      refreshing: false,
       orderCode,
+      deliverFlag,
       showStampScanner: false,
       showShelfScanner: false,
       qrData: '',
@@ -61,13 +65,16 @@ export default class App extends Component {
   }
 
   _canPutIntoShelf = (orderDetail) => {
-    const { FO_SUBMITTED, SO_SUBMITTED, EO_SUBMITTED } = ORDER_STATUSES;
+    const { FO_SUBMITTED, SO_SUBMITTED, EO_SUBMITTED,
+            FO_DELIVERED, SO_DELIVERED, EO_DELIVERED } = ORDER_STATUSES;
     
-    const boxCode = _.get(orderDetail, 'pickupHub.boxInfo.code');
+    const boxCode = _.get(this._getCurrentHub(orderDetail), 'boxInfo.code');
+    
     const orderStatus = _.get(orderDetail, 'orderStatus');
 
     const result = (boxCode == null || boxCode == '' || boxCode == undefined)
-          && !_.includes([ FO_SUBMITTED, SO_SUBMITTED, EO_SUBMITTED ], orderStatus);
+          && !_.includes([ FO_SUBMITTED, SO_SUBMITTED, EO_SUBMITTED,
+            FO_DELIVERED, SO_DELIVERED, EO_DELIVERED ], orderStatus);
 
     LoggerUtils.log('_canPutIntoShelf', 'orderStatus', orderStatus, 
           'boxCode', boxCode, 'result', result);
@@ -99,19 +106,27 @@ export default class App extends Component {
     return result;
   }
 
+  onRefresh() {
+    LoggerUtils.log("onRefresh OrderDetail");
+    this._refresh();
+  }
+
   _refresh = () => {
+    this.setState({ refreshing: true });
+
     const { orderCode } = this.state;
     LoggerUtils.log('_refresh', 'orderCode', orderCode);
     OrderService.orderDetailByOrderCode(orderCode).then(response => {
       LoggerUtils.log('orderDetailByOrderCode', 'orderCode', orderCode, 'data', JSON.stringify(response));
       if(_.get(response, 'data.success') == true) {
         const orderDetail = _.get(response, 'data.data');
-        this.setState({ orderDetail });
+        this.setState({ orderDetail, refreshing: false });
       } else {
         const data = _.get(response, 'data.data');
         const errorCode = _.get(data, 'errorCode');
         const params = _.get(data, 'params');
         LoggerUtils.log('_refresh OrderDetail:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+        this.setState({ refreshing: false });
       }
     });
   }
@@ -184,10 +199,24 @@ export default class App extends Component {
     });
   }
 
+  _getCurrentHub = (orderDetail) => {
+    const { FO_AT_HUB_FOR_COLLECTION } = ORDER_STATUSES;
+
+    let hub = _.get(orderDetail, "pickupHub");
+    
+    const orderStatus = _.get(orderDetail, 'orderStatus');
+    if(_.includes([ FO_AT_HUB_FOR_COLLECTION ], orderStatus)) {
+      hub = _.get(orderDetail, "dropOffHub");
+    }
+    return hub;
+  }
+
   _putIntoShelf = () => {
     const { orderDetail, orderCode, qrData } = this.state;
 
-    const hubCode = _.get(orderDetail, "pickupHub.code");
+    const hub = this._getCurrentHub(orderDetail);
+    const hubCode = _.get(hub, 'code');
+
     const boxCode = qrData;
     const parcelDimension = _.get(orderDetail, "parcels[0].size");
 
@@ -210,18 +239,67 @@ export default class App extends Component {
   _acceptOrder = () => {
     const { orderDetail } = this.state;
     const orderCode = _.get(orderDetail, "orderCode");
-    const hubCode = _.get(orderDetail, "pickupHub.code");
-    
-    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'hubCode', hubCode);
-    OrderService.atHub(orderCode, hubCode).then(response => {
-      LoggerUtils.log('_acceptOrder:: atHub', 'data', JSON.stringify(response));
+    const orderStatus = 'FO_AT_HUB';
+
+    const hub = this._getCurrentHub(orderDetail);
+    const hubCode = _.get(hub, 'code');
+
+    const params = { 
+      status: orderStatus,
+      collectFee: false,
+      collectCod: false,
+      paymentType: undefined,
+      note: undefined,
+      hubCode: hubCode,
+      lat: undefined,
+      lng: undefined,
+    };
+
+    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'params', JSON.stringify(params));
+    OrderService.changeOrderStatus(orderCode, params).then(response => {
+      LoggerUtils.log('_acceptOrder:: changeOrderStatus', 'data', JSON.stringify(response));
       if(_.get(response, 'data.success') == true) {
         this._refresh();
       } else {
         const data = _.get(response, 'data.data');
         const errorCode = _.get(data, 'errorCode');
         const params = _.get(data, 'params');
-        LoggerUtils.log('_acceptOrder:: error', 'errorCode', errorCode, 'params', JSON.stringify(params));
+        LoggerUtils.log('_acceptOrder:: changeOrderStatus error', 
+          'errorCode', errorCode, 'params', JSON.stringify(params));
+      }
+    });
+  }
+
+  _deliverOrder = () => {
+    const { orderDetail } = this.state;
+    const orderCode = _.get(orderDetail, "orderCode");
+    const orderStatus = 'FO_DELIVERED';
+
+    const hub = this._getCurrentHub(orderDetail);
+    const hubCode = _.get(hub, 'code');
+
+    const params = { 
+      status: orderStatus,
+      collectFee: false,
+      collectCod: false,
+      paymentType: undefined,
+      note: undefined,
+      hubCode: hubCode,
+      lat: undefined,
+      lng: undefined,
+    };
+
+    LoggerUtils.log('_deliverOrder', 'orderCode', orderCode, 'params', JSON.stringify(params));
+    OrderService.changeOrderStatus(orderCode, params).then(response => {
+      LoggerUtils.log('_deliverOrder:: changeOrderStatus', 'data', JSON.stringify(response));
+      if(_.get(response, 'data.success') == true) {
+        this._refresh();
+      } else {
+        const data = _.get(response, 'data.data');
+        const errorCode = _.get(data, 'errorCode');
+        const params = _.get(data, 'params');
+        LoggerUtils.log('_deliverOrder:: changeOrderStatus error', 
+          'errorCode', errorCode, 'params', JSON.stringify(params));
       }
     });
   }
@@ -229,11 +307,14 @@ export default class App extends Component {
   _handover = () => {
     const { orderDetail } = this.state;
 
-    const hubCode = _.get(orderDetail, "pickupHub.code");
-    const boxCode = _.get(orderDetail, 'pickupHub.boxInfo.code');
+    const hub = this._getCurrentHub(orderDetail);
+    const hubCode = _.get(hub, 'code');
+    const boxCode = _.get(hub, 'boxInfo.code');
     const orderCode = _.get(orderDetail, "orderCode");
     
-    LoggerUtils.log('_handover', 'hubCode', hubCode, 'boxCode', boxCode, 'orderCode', orderCode);
+    LoggerUtils.log('_handover', 'hubCode', hubCode, 
+      'boxCode', boxCode, 'orderCode', orderCode,
+        'orderDetail', JSON.stringify(orderDetail));
     
     HubService.handover(hubCode, boxCode, orderCode).then(response => {
       LoggerUtils.log('_handover:: handover', 'data', JSON.stringify(response));
@@ -250,7 +331,10 @@ export default class App extends Component {
 
   render() {
     const { showStampScanner, showShelfScanner } = this.state;
-    LoggerUtils.log('render OrderDetail', 'showStampScanner', showStampScanner, 'showShelfScanner', showShelfScanner);
+    LoggerUtils.log('render OrderDetail', 
+      'showStampScanner', showStampScanner, 
+      'showShelfScanner', showShelfScanner);
+
     if(showStampScanner) {
       return this._renderStampScanner();
     }
@@ -383,12 +467,57 @@ export default class App extends Component {
     );
   }
 
+  _renderFooter(orderDetail, canAcceptOrder, canHandover, deliverFlag) {
+    const orderStatus = _.get(orderDetail, 'orderStatus');
+    const { FO_DELIVERED, SO_DELIVERED, EO_DELIVERED } = ORDER_STATUSES;
+
+    if(!_.includes([ FO_DELIVERED, SO_DELIVERED, EO_DELIVERED ], orderStatus)) {
+      if(deliverFlag) {
+        return (
+          <Footer>
+            <FooterTab>
+                <Button full style={{ backgroundColor : '#051B49'}}
+                  onPress={this._deliverOrder}>
+                  <Title style={{ color: '#FFF' }}>Giao hàng</Title>
+                </Button>  
+            </FooterTab>
+          </Footer>
+        )
+      }
+      if(canAcceptOrder) {
+        return (
+          <Footer>
+            <FooterTab>
+                <Button full style={{ backgroundColor : '#051B49'}}
+                  onPress={this._acceptOrder}>
+                  <Title style={{ color: '#FFF' }}>Nhận hàng</Title>
+                </Button>  
+            </FooterTab>
+          </Footer>
+        )
+      }
+      if(canHandover) {
+        return (
+          <Footer>
+            <FooterTab>
+                <Button full style={{ backgroundColor : '#051B49'}}
+                  onPress={this._handover}>
+                  <Title style={{ color: '#FFF' }}>Bàn giao</Title>
+                </Button>  
+            </FooterTab>
+          </Footer>
+        )
+      }
+    }
+  }
+
   _renderMainScreen() {
-    const { orderDetail } = this.state;
+    const { refreshing, deliverFlag, orderDetail } = this.state;
     const { ACTION_SCAN_STAMP, ACTION_PUT_INTO_SHELF } = this.options;
     
     const canAssignStamp = this._canAssignStamp(orderDetail);
     const canPutIntoShelf = this._canPutIntoShelf(orderDetail);
+
     const canAcceptOrder = this._canAcceptOrder(orderDetail);
     const canHandover = this._canHandover(orderDetail);
     
@@ -396,7 +525,10 @@ export default class App extends Component {
       'canAssignStamp', canAssignStamp, 
         'canPutIntoShelf', canPutIntoShelf, 
           'canAcceptOrder', canAcceptOrder,
-            'canHandover', canHandover);
+            'canHandover', canHandover,
+              'deliverFlag', deliverFlag);
+
+    const footer = this._renderFooter(orderDetail, canAcceptOrder, canHandover, deliverFlag);
 
     return (
       <Container>
@@ -415,7 +547,13 @@ export default class App extends Component {
             </Button>
           </Right>
         </Header>
-        <Content style={{ backgroundColor: "#FFF" }}>
+        <Content style={{ backgroundColor: "#FFF" }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={this.onRefresh.bind(this)}
+            />
+          }>
           <View style={{flex: 1, padding: 10, }}>
             {/* Section 1 */}
             <View style={{
@@ -530,7 +668,7 @@ export default class App extends Component {
                   <Text>Kệ</Text>
                 </View>
                 <View>
-                  <Text>{_.get(orderDetail, 'pickupHub.boxInfo.code')}</Text>
+                  <Text>{_.get(this._getCurrentHub(orderDetail), 'boxInfo.code')}</Text>
                 </View>
               </View>
               { 
@@ -593,30 +731,7 @@ export default class App extends Component {
             </View>
           </View>
         </Content>
-        { canAcceptOrder && 
-          (
-            <Footer>
-              <FooterTab>
-                  <Button full style={{ backgroundColor : '#051B49'}}
-                    onPress={this._acceptOrder}>
-                    <Title style={{ color: '#FFF' }}>Nhận hàng</Title>
-                  </Button>  
-              </FooterTab>
-            </Footer>
-          )
-        }
-        { canHandover && 
-          (
-            <Footer>
-              <FooterTab>
-                  <Button full style={{ backgroundColor : '#051B49'}}
-                    onPress={this._handover}>
-                    <Title style={{ color: '#FFF' }}>Bàn giao</Title>
-                  </Button>  
-              </FooterTab>
-            </Footer>
-          )
-        }
+        {footer}
       </Container>
     );
   }

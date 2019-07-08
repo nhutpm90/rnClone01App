@@ -65,6 +65,9 @@ const API = {
     if(request.isAuth == true) {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
+    if(request.contentType != undefined) {
+        headers['Content-type'] = request.contentType;
+    }
 
     LoggerUtils.log('doPost', 'request', JSON.stringify(request), 
         'headers', JSON.stringify(headers));

@@ -226,4 +226,20 @@ const ORDER_STATUSES = {
   BOX_BOOKING_DISPOSED,
 };
 
-export { ORDER_STATUSES };
+// order types
+const FO = "FO";
+const SO = "SO";
+const NO = "NO";
+const EO = "EO";
+const EXTERNAL_FO = "EXTERNAL_FO";
+const EXTERNAL_SO = "EXTERNAL_SO";
+const EXTERNAL_EO = "EXTERNAL_EO";
+const EXTERNAL_LEL = "EXTERNAL_LEL";
+const BOX_BOOKING = "BOX_BOOKING";
+
+const ORDER_TYPES = {
+  FO, SO, NO, EO,
+  EXTERNAL_FO, EXTERNAL_SO, EXTERNAL_EO, EXTERNAL_LEL, BOX_BOOKING
+};
+
+export { ORDER_STATUSES, ORDER_TYPES };

@@ -35,16 +35,22 @@ const OrderService = {
         .requestParams({ orderCode: orderCode })
         .doPost();
     },
-    atHub(orderCode, hubCode) {
-        LoggerUtils.log('OrderService:: atHub', 'orderCode', orderCode, 'hubCode', hubCode);
-        // https://alpha.ilogic.vn:8080/auth/hub/manual/orders/ILG004325?collectCod=false&collectFee=false&hubCode=HQ3-01&status=FO_AT_HUB
+    changeOrderStatus(orderCode, params) {
+        // const params = { 
+        //     status: status,
+        //     collectFee: collectFee,
+        //     collectCod: collectCod,
+        //     paymentType: paymentType,
+        //     note: note,
+        //     hubCode: hubCode,
+        //     lat: lat,
+        //     lng: lng,
+        // };
+        LoggerUtils.log('OrderService:: changeOrderStatus', 
+                            'orderCode', orderCode, 'params', JSON.stringify(params));
         return new Request().fromUrl(`/hub/manual/orders/${orderCode}`)
-        .requestParams({ 
-            collectCod: false,
-            collectFee: false,
-            hubCode: hubCode,
-            status: 'FO_AT_HUB',
-        }).doPost();
+        .requestParams(params)
+        .doPost();
     },
     // debug code start
     getAvailableStamp(callback) {

@@ -18,6 +18,8 @@ import DriverOrders from './DriverOrders';
 
 import QRCodeGenerator from '../components/QRCodeGenerator';
 
+import InputOTP from './InputOTP';
+
 const rootTab = createBottomTabNavigator(
   {
     Home: {
@@ -72,7 +74,7 @@ const MainStack = createStackNavigator(
     },
     rootTab: {
       screen: rootTab,
-    }
+    },
   },
   {
     initialRouteName: 'rootTab',
@@ -93,6 +95,9 @@ const RootStack = createStackNavigator(
     },
     QRCodeGenerator: {
       screen: QRCodeGenerator
+    },
+    InputOTP: {
+      screen: InputOTP,
     },
   },
   {

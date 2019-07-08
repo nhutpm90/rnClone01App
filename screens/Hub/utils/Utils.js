@@ -29,6 +29,7 @@ const CUSTOMER_SCANNER_SCREEN = "CustomerScanner";
 const DRIVER_SCANNER_SCREEN = "DriverScanner";
 const DRIVER_ORDERS_SCREEN = "DriverOrders";
 const QRCODE_GENERATOR_SCREEN = "QRCodeGenerator";
+const INPUT_OTP_SCREEN = "InputOTP";
 
 const NavigationUtils = {
   navigateToLoginScreen(navigation) {
@@ -43,20 +44,23 @@ const NavigationUtils = {
   navigateToOrdersScreen(navigation, boxId) {
     this.navigateTo(navigation, ORDERS_SCREEN, { boxId: boxId });
   },
-  navigateToOrderDetailScreen(navigation, orderCode) {
-    this.navigateTo(navigation, ORDER_DETAIL_SCREEN, { orderCode: orderCode });
+  navigateToOrderDetailScreen(navigation, orderCode, deliverFlag) {
+    this.navigateTo(navigation, ORDER_DETAIL_SCREEN, { orderCode: orderCode, deliverFlag: deliverFlag });
   },
   navigateToCustomerScannerScreen(navigation) {
     this.navigateTo(navigation, CUSTOMER_SCANNER_SCREEN);
   },
-  navigateToDriverScannerScreen(navigation, hubCode) {
-    this.navigateTo(navigation, DRIVER_SCANNER_SCREEN, { hubCode: hubCode });
+  navigateToDriverScannerScreen(navigation, hub) {
+    this.navigateTo(navigation, DRIVER_SCANNER_SCREEN, { hub: hub });
   },
-  navigateToDriverOrdersScreen(navigation, hubCode, driverCode) {
-    this.navigateTo(navigation, DRIVER_ORDERS_SCREEN, { hubCode: hubCode, driverCode: driverCode });
+  navigateToDriverOrdersScreen(navigation, hub, driverCode) {
+    this.navigateTo(navigation, DRIVER_ORDERS_SCREEN, { hub: hub, driverCode: driverCode });
   },
   navigateToQRCodeGeneratorScreen(navigation, title, data) {
     this.navigateTo(navigation, QRCODE_GENERATOR_SCREEN, { title: title, data: data });
+  },
+  navigateToInputOTPScreen(navigation, hub) {
+    this.navigateTo(navigation, INPUT_OTP_SCREEN, { hub: hub });
   },
   navigateTo(navigation, screen, params) {
     LoggerUtils.log('navigateTo', 'screen', screen, 'params', JSON.stringify(params));

@@ -11,14 +11,14 @@ import CodeScanner from '../components/CodeScanner';
 export default class App extends Component {
 
   constructor(props) {
-    LoggerUtils.log('init Driver Scanner');
     super(props);
-
+    
     const { navigation } = props;
-    const hubCode = navigation.getParam('hubCode', '');
+    const hub = navigation.getParam('hub', '');
+    LoggerUtils.log('init DriverScanner', 'hub', JSON.stringify(hub));
 
     this.state = {
-      hubCode,
+      hub,
       // qrData: '',
       qrData: 'ILG1809019', // debug code
     };
@@ -44,18 +44,21 @@ export default class App extends Component {
   }
 
   _showDriverOrders = () => {
-    const { hubCode, qrData } = this.state;
+    const { hub, qrData } = this.state;
     const { navigation } = this.props;
-    LoggerUtils.log('_showDriverOrders', 'hubCode', hubCode, 'driverCode', qrData);
-    NavigationUtils.navigateToDriverOrdersScreen(navigation, hubCode, qrData);
+
+    const driverCode = qrData;
+
+    LoggerUtils.log('_showDriverOrders', 'hub', JSON.stringify(hub), 'driverCode', driverCode);
+    NavigationUtils.navigateToDriverOrdersScreen(navigation, hub, qrData);
   }
   
   componentDidMount() {
-    LoggerUtils.log('componentDidMount Driver Scanner');
+    LoggerUtils.log('componentDidMount DriverScanner');
   }
 
   render() {
-    LoggerUtils.log('render Driver Scanner');
+    LoggerUtils.log('render DriverScanner');
     const { qrData } = this.state;
     const { navigation } = this.props;
     return (
