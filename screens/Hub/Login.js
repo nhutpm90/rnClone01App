@@ -4,6 +4,9 @@ import { View, TouchableWithoutFeedback } from "react-native";
 import { Container, Header, Title, Content, Button, Item, Label, Input, 
   Body, Left, Right, Icon, IconNB, Form, Text, Textarea, Picker, Toast } from "native-base";
 
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
+
 import _ from 'lodash';
 
 import { NavigationUtils, LoggerUtils } from './utils/Utils';
@@ -14,7 +17,7 @@ import masterStore from './store/MasterStore';
 
 export default class App extends Component {
   constructor(props) {
-    LoggerUtils.log('init Login');
+    LoggerUtils.log('Login:: constructor');
     super(props);
 
     this.state = {
@@ -37,7 +40,7 @@ export default class App extends Component {
     const username = _.get(formData, "username");
     const password = _.get(formData, "password");
     
-    LoggerUtils.log('_login', 'username', username, 'password', password);
+    LoggerUtils.log('Login:: _login', 'username', username, 'password', password);
     
     if(username == undefined || username == '') {
       Toast.show({ text: "Nhập số điện thoại !", duration: 1000 });
@@ -51,7 +54,7 @@ export default class App extends Component {
   }
 
   _authenticate = (username, password) => {
-    LoggerUtils.log('_authenticate', 'username', username, 'password', password);
+    LoggerUtils.log('Login:: _authenticate', 'username', username, 'password', password);
     const self = this;
     const { navigation } = this.props;
     AccountService.hubAccountInfo(username).then(response => {
@@ -64,11 +67,11 @@ export default class App extends Component {
           const credentials = response.data;
           LoggerUtils.log('_authenticate:: login', 'credentials', JSON.stringify(credentials));
           masterStore.setUser(accountInfo, credentials);
-          // self.props.navigation.navigate('ServicePointMain');
+          self.props.navigation.navigate('ServicePointMain');
 
           // debug code
-          NavigationUtils.navigateToHomeScreen(navigation);
-          // NavigationUtils.navigateToOrderDetailScreen(navigation, "ILG004660");
+          // NavigationUtils.navigateToHomeScreen(navigation);
+          // NavigationUtils.navigateToOrderDetailScreen(navigation, "ILG004907");
         }).catch(function (e) {
           const error = Object.assign({}, e);
           LoggerUtils.log('_authenticate', 'error', JSON.stringify(error));
@@ -84,8 +87,26 @@ export default class App extends Component {
   }
 
   componentDidMount() {
+    // test websocket connection begin
+    // const url = "https://alpha.ilogic.vn:9090/ilogic";
+    // const socket = new SockJS(url);
+
+    // const stompClient = Stomp.over(socket);
+    // stompClient.debug = () => {};
+    
+    // stompClient.connect({}, function() {
+    //     console.log(`connected ${url}`);
+
+    //     stompClient.subscribe('/topic/payment', function onMessageReceived(payload) {
+    //         console.log("onMessageReceived:: " + payload);
+    //     });
+    // }, function() {
+    //     console.log("error");
+    // });
+
+    // test websocket connection end
     // debug code
-    this._authenticate("0909795262", "123456");
+    // this._authenticate("0909795262", "123456");
   }
 
   render() {
@@ -95,8 +116,7 @@ export default class App extends Component {
         <Form style={{
           flex: 1,
           justifyContent: "center",
-          alignItems: "center",
-          borderWidth: 1
+          alignItems: "center"
         }} >
           <Item floatingLabel>
             <Label>Số điện thoại</Label>

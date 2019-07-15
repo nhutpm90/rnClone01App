@@ -23,7 +23,7 @@ import masterStore from '../store/MasterStore';
 export default class App extends Component {
 
   constructor(props) {
-    LoggerUtils.log('init Boxes');
+    LoggerUtils.log('Boxes:: init');
     super(props);
 
     this.state = {
@@ -133,7 +133,7 @@ export default class App extends Component {
         const hub = _.get(response, 'data.data');
         this.setState({ hub, refreshing: false });
         // debug code begin
-        NavigationUtils.navigateToInputOTPScreen(this.props.navigation, hub);
+        // NavigationUtils.navigateToInputOTPScreen(this.props.navigation, hub);
 
         // const driverCode = "ILG1809019";
         // NavigationUtils.navigateToDriverOrdersScreen(this.props.navigation, hub, driverCode);

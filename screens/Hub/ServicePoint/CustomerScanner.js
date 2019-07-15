@@ -8,6 +8,8 @@ import { NavigationUtils, LoggerUtils } from '../utils/Utils';
 
 import CodeScanner from '../components/CodeScanner';
 
+import OrderService from '../services/OrderService';
+
 export default class App extends Component {
 
   constructor(props) {
@@ -15,8 +17,8 @@ export default class App extends Component {
     super(props);
 
     this.state = {
-      // qrData: '',
-      qrData: 'ILG004770', // debug code
+      qrData: '',
+      // qrData: 'ILG004770', // debug code
     };
 
     this.options = {
@@ -48,6 +50,12 @@ export default class App extends Component {
   
   componentDidMount() {
     LoggerUtils.log('componentDidMount Customer Scanner');
+     // debug code start
+     OrderService.getLatestOrder((orderCode) => {
+      LoggerUtils.log('getLatestOrder', 'orderCode', orderCode);
+      this.setState({ qrData: orderCode });
+    });
+    // debug code end
   }
 
   render() {

@@ -1,3 +1,27 @@
+import _ from 'lodash';
+
+const BASE_URL = "https://alpha.ilogic.vn:8080";
+const SERVER = {
+  AUTH_SERVER: {
+    URL: `${BASE_URL}/auth`,
+  },
+  PAYMENT_SERVER: {
+    URL: `${BASE_URL}/payment`,
+  },
+  WEBSOCKET: {
+    URL: 'https://alpha.ilogic.vn:9090/ilogic',
+    TOPIC: {
+      PAYMENT: '/topic/payment',
+    }
+  },
+  TIMER : {
+    PAYMENT: {
+      INTERVAL: 5000,
+      STOP_AFTER: 300000,
+    }
+  }
+};
+
 // Order Statuses 
 const FO_SUBMITTED = "FO_SUBMITTED";
 const FO_CANCELLED = "FO_CANCELLED";
@@ -242,4 +266,33 @@ const ORDER_TYPES = {
   EXTERNAL_FO, EXTERNAL_SO, EXTERNAL_EO, EXTERNAL_LEL, BOX_BOOKING
 };
 
-export { ORDER_STATUSES, ORDER_TYPES };
+// payment types
+const CASH = "CASH";
+const BANK = "BANK";
+const CARD = "CARD";
+const MOMO = "MOMO";
+const VNPAY = "VNPAY";
+const WALLET = "WALLET";
+const B2B = "B2B";
+const PAYMENT_TYPES = {
+  CASH, BANK, CARD, MOMO, VNPAY, WALLET, B2B
+};
+
+const OrderStatusUtils = {
+  createStatus(FO_STATUS, SO_STATUS, EO_STATUS) {
+    const ret = {};
+    ret[FO] = FO_STATUS;
+    ret[EXTERNAL_FO] = FO_STATUS;
+    ret[SO] = SO_STATUS;
+    ret[EO] = EO_STATUS;
+    return ret;
+  },
+  atHubStatus(orderType) {
+    return _.get(this.createStatus(FO_AT_HUB, SO_AT_HUB, EO_AT_HUB), orderType);
+  },
+  deliveredStatus(orderType) {
+    return _.get(this.createStatus(FO_DELIVERED, SO_DELIVERED, EO_DELIVERED), orderType);
+  }
+};
+
+export { SERVER, ORDER_STATUSES, ORDER_TYPES, PAYMENT_TYPES, OrderStatusUtils };

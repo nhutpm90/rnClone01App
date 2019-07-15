@@ -53,6 +53,21 @@ const OrderService = {
         .doPost();
     },
     // debug code start
+    getLatestOrder(callback) {
+        AccountService.login("om", "ilove1log1c").then(response => {
+            const data = response.data;
+            const accessToken = data["access_token"]
+            API.doGet(
+                new Request().fromUrl(`/operation/orders/filter`)
+                .requestParams({ orderTypeList: 'FO,SO,EO,EXTERNAL_FO' }), accessToken
+            ).then(response => {
+                const order = response.data.data[0];
+                const orderCode = _.get(order, 'orderCode');
+                console.log(`getLatestOrder:: orderCode['${orderCode}']`);
+                callback(orderCode);
+            });
+        });
+    },
     getAvailableStamp(callback) {
         AccountService.login("om", "ilove1log1c").then(response => {
             const data = response.data;

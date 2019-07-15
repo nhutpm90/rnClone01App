@@ -79,7 +79,7 @@ export default class App extends Component {
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
           <Left style={{flex: 1}}>
-            <Button transparent onPress={() => this.props.navigation.goBack()}>
+            <Button transparent onPress={() => NavigationUtils.goBack(this.props.navigation)}>
               <IconNB name="arrow-back" />
             </Button>
           </Left>

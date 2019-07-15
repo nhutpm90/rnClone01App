@@ -12,6 +12,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "native-base": "^2.12.1",
+    "net": "^1.0.2",
     "react": "16.8.3",
     "react-native": "0.59.8",
     "react-native-camera": "^2.11.0",
@@ -19,7 +20,9 @@
     "react-native-gesture-handler": "^1.2.1",
     "react-native-qrcode-svg": "^5.1.2",
     "react-native-svg": "^9.5.1",
-    "react-navigation": "^3.11.0"
+    "react-navigation": "^3.11.0",
+    "sockjs-client": "^1.3.0",
+    "stompjs": "^2.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",

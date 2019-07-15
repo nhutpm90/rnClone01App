@@ -3,18 +3,26 @@ import React, { Component } from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableWithoutFeedback, Alert, Vibration,
   ActivityIndicator, RefreshControl } from "react-native";
 
-import { Container, Header, Title, Subtitle, Content, Item, Form, 
-  Text as TextNB, Input, Button, Icon as IconNB, Left, Right, Body, Footer, FooterTab, Badge, H3, ActionSheet } from "native-base";
+import { Container, Header, Title, Subtitle, Content, Item, Form, Label,
+  View as ViewNB, Text as TextNB, Input, Button, Icon as IconNB, Left, Right, Body, Radio, ListItem,
+  Footer, FooterTab, Badge, ActionSheet, Spinner, Picker, H1, H2, H3 } from "native-base";
+
+import QRCode from "react-native-qrcode-svg";
 
 import _ from 'lodash';
 
 import CodeScanner from '../components/CodeScanner';
 
 import { DateTimeUtils, LoggerUtils, NavigationUtils } from '../utils/Utils';
+
+import { stormWebsocket, timer } from '../utils/BackgroundProcesses';
+
 import OrderService from '../services/OrderService';
 import HubService from '../services/HubService';
+import PaymentService from './../services/PaymentService';
 
-import { ORDER_STATUSES } from '../utils/Constants';
+import { ORDER_STATUSES, PAYMENT_TYPES, OrderStatusUtils } from '../utils/Constants';
+
 export default class App extends Component {
 
   constructor(props) {
@@ -26,14 +34,26 @@ export default class App extends Component {
     
     LoggerUtils.log('init OrderDetail', 'orderCode', orderCode);
 
+    const { CASH, MOMO, VNPAY } = PAYMENT_TYPES;
+
+    const paymentOptions = [
+      this.createPaymentOption(CASH, true, 'Tiền mặt', ''),
+      this.createPaymentOption(MOMO, false, 'MoMo', ''),
+      this.createPaymentOption(VNPAY, false, 'VNPay', '')
+    ];
+
     this.state = {
       refreshing: false,
       orderCode,
       deliverFlag,
       showStampScanner: false,
       showShelfScanner: false,
+      showPayment: false,
+      // showPayment: true,
+      paymentTypes: PAYMENT_TYPES,
+      paymentOptions: paymentOptions,
       qrData: '',
-      // orderDetail: {}
+      // orderDetail: {},
     };
 
     const ACTION_SCAN_STAMP = "ACTION_SCAN_STAMP";
@@ -43,6 +63,118 @@ export default class App extends Component {
       ACTION_SCAN_STAMP, 
       ACTION_PUT_INTO_SHELF,
     }
+
+    // add payment callback
+    // stormWebsocket.connect();
+    // stormWebsocket.addPaymentCallback((data) => {
+    //   LoggerUtils.log('Boxes:: setOnPaymentReceived', 'data', data);
+    // }, true);
+
+    // add timer
+    // timer.startPaymentTimer(() => {
+    //   const { orderDetail } = this.state;
+    //   const selectedPayment = _.find(paymentOptions, { selected: true });
+    //   this._updatePaymentTransaction(orderDetail, selectedPayment);
+    // }, () => {
+    //   this._paymentTimeoutCb();
+    // });
+  }
+
+  _updatePaymentTransaction = (orderDetail, selectedPayment) => {
+    if(orderDetail != undefined) {
+      const { paymentOptions, paymentTypes } = this.state;
+      const { orderCode, totalFee } = orderDetail;
+      const { CASH, MOMO, VNPAY } = paymentTypes;
+      
+      
+      
+      LoggerUtils.log('OrderDetail:: _updatePaymentTransaction', 
+        'orderCode', orderCode, 'totalFee', totalFee,
+        'paymentType', type, 'transId', transId);
+      if(type != CASH && transId != undefined && transId != '') {
+        PaymentService.paymentStatus(transId).then(response => {
+          LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: paymentStatus', 
+            'transId', transId, 'data', JSON.stringify(response));
+          if(_.get(response, 'data.success') == true) {
+            const newPaymentOptions = [ ...paymentOptions ];
+            const targetPaymentOption = _.find(newPaymentOptions, {transId: transId});
+            _.set(targetPaymentOption, 'paymentCompleted', true);
+            _.set(targetPaymentOption, 'status', 'Đã thanh toán');
+            this.setState({ paymentOptions: newPaymentOptions });
+            PaymentService.addTransaction(orderCode, transId, totalFee).then(response => {
+              LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: addTransaction', 
+                'orderCode', orderCode, 'transId', transId, 'totalFee', totalFee,
+                 'data', JSON.stringify(response));
+            });
+          } else {
+            const data = _.get(response, 'data.data');
+            const errorCode = _.get(data, 'errorCode');
+            if(errorCode == 'ECS_PAYMENT_01') {
+              // waiting for payment
+            } else {
+              const params = _.get(data, 'params');
+              LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: error', 
+                'errorCode', errorCode, 'params', JSON.stringify(params));
+            }
+          }
+        });
+      } else {
+        LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: skip checking');
+      }
+    }
+  }
+
+  _paymentTimeoutCb = () => {
+    LoggerUtils.log('OrderDetail:: _paymentTimeoutCb');
+    // const { orderDetail, paymentOptions, paymentTypes } = this.state;
+    // if(orderDetail != undefined) {
+    //   const { orderCode, totalFee } = orderDetail;
+    //   const { CASH, MOMO, VNPAY } = paymentTypes;
+      
+    //   const paymentSelected = _.find(paymentOptions, { selected: true });
+    //   const { type, transId } = paymentSelected;
+      
+    //   LoggerUtils.log('OrderDetail:: _updatePaymentTransaction', 
+    //     'orderCode', orderCode, 'totalFee', totalFee,
+    //     'paymentType', type, 'transId', transId);
+    //   if(type != CASH && transId != undefined && transId != '') {
+    //     PaymentService.paymentStatus(transId).then(response => {
+    //       LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: paymentStatus', 
+    //         'transId', transId, 'data', JSON.stringify(response));
+    //       if(_.get(response, 'data.success') == true) {
+    //         const newPaymentOptions = [ ...paymentOptions ];
+    //         const targetPaymentOption = _.find(newPaymentOptions, {transId: transId});
+    //         _.set(targetPaymentOption, 'paymentCompleted', true);
+    //         _.set(targetPaymentOption, 'status', 'Đã thanh toán');
+    //         this.setState({ paymentOptions: newPaymentOptions });
+    //         PaymentService.addTransaction(orderCode, transId, totalFee).then(response => {
+    //           LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: addTransaction', 
+    //             'orderCode', orderCode, 'transId', transId, 'totalFee', totalFee,
+    //              'data', JSON.stringify(response));
+    //         });
+    //       } else {
+    //         const data = _.get(response, 'data.data');
+    //         const errorCode = _.get(data, 'errorCode');
+    //         if(errorCode == 'ECS_PAYMENT_01') {
+    //           // waiting for payment
+    //         } else {
+    //           const params = _.get(data, 'params');
+    //           LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: error', 
+    //             'errorCode', errorCode, 'params', JSON.stringify(params));
+    //         }
+    //       }
+    //     });
+    //   } else {
+    //     LoggerUtils.log('OrderDetail:: _updatePaymentTransaction:: skip checking');
+    //   }
+    // }
+  }
+
+  createPaymentOption(type, selected, text, transId) {
+    const qrData = '';
+    const status = '';
+    const paymentCompleted = false;
+    return { type, selected, text, transId, qrData, status, paymentCompleted }
   }
   
   componentDidMount() {
@@ -237,43 +369,274 @@ export default class App extends Component {
   }
 
   _acceptOrder = () => {
-    const { orderDetail } = this.state;
-    const orderCode = _.get(orderDetail, "orderCode");
-    const orderStatus = 'FO_AT_HUB';
+    const { orderDetail, paymentOptions } = this.state;
+    const { totalFee, paidBySender} = orderDetail;
 
-    const hub = this._getCurrentHub(orderDetail);
-    const hubCode = _.get(hub, 'code');
-
-    const params = { 
-      status: orderStatus,
-      collectFee: false,
-      collectCod: false,
-      paymentType: undefined,
-      note: undefined,
-      hubCode: hubCode,
-      lat: undefined,
-      lng: undefined,
-    };
-
-    LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'params', JSON.stringify(params));
-    OrderService.changeOrderStatus(orderCode, params).then(response => {
-      LoggerUtils.log('_acceptOrder:: changeOrderStatus', 'data', JSON.stringify(response));
-      if(_.get(response, 'data.success') == true) {
-        this._refresh();
-      } else {
-        const data = _.get(response, 'data.data');
-        const errorCode = _.get(data, 'errorCode');
-        const params = _.get(data, 'params');
-        LoggerUtils.log('_acceptOrder:: changeOrderStatus error', 
-          'errorCode', errorCode, 'params', JSON.stringify(params));
-      }
-    });
+    const paymentCompleted = _.find(paymentOptions, { paymentCompleted: true });
+    let showPayment = !paidBySender || totalFee != 0;
+    
+    showPayment = false; // debug code
+    if(showPayment) {
+      this._setVisiblePaymentScreen(true);
+    } else {
+      const orderCode = _.get(orderDetail, 'orderCode');
+      const orderType = _.get(orderDetail, 'orderType');
+      // const orderStatus = 'FO_AT_HUB';
+      const orderStatus = OrderStatusUtils.atHubStatus(orderType);
+  
+      LoggerUtils.log('_acceptOrder', 'orderType', orderType, 'orderStatus', orderStatus);
+      
+      const hub = this._getCurrentHub(orderDetail);
+      const hubCode = _.get(hub, 'code');
+  
+      const params = { 
+        status: orderStatus,
+        collectFee: false,
+        collectCod: false,
+        paymentType: undefined,
+        note: undefined,
+        hubCode: hubCode,
+        lat: undefined,
+        lng: undefined,
+      };
+  
+      LoggerUtils.log('_acceptOrder', 'orderCode', orderCode, 'params', JSON.stringify(params));
+      OrderService.changeOrderStatus(orderCode, params).then(response => {
+        LoggerUtils.log('_acceptOrder:: changeOrderStatus', 'data', JSON.stringify(response));
+        if(_.get(response, 'data.success') == true) {
+          this._refresh();
+        } else {
+          const data = _.get(response, 'data.data');
+          const errorCode = _.get(data, 'errorCode');
+          const params = _.get(data, 'params');
+          LoggerUtils.log('_acceptOrder:: changeOrderStatus error', 
+            'errorCode', errorCode, 'params', JSON.stringify(params));
+        }
+      });
+    }
   }
 
+  _changePaymentType = (newPaymentType: string) => {
+    const { paymentOptions } = this.state;
+    const currentPaymentType = _.get(_.find(paymentOptions, { 'selected': true }), 'type');
+
+    LoggerUtils.log('_changePaymentType', 
+      'currentPaymentType', currentPaymentType,
+      'newPaymentType', newPaymentType, 
+      'paymentOptions', JSON.stringify(paymentOptions));
+
+    if(currentPaymentType != newPaymentType) {
+      let newPaymentOptions = [ ...paymentOptions ];
+
+      _.set(_.find(newPaymentOptions, { 'selected': true }), 'selected', false);
+      _.set(_.find(newPaymentOptions, { 'type': newPaymentType }), 'selected', true);
+
+      LoggerUtils.log('_changePaymentType', 'newPaymentOptions', JSON.stringify(newPaymentOptions));
+      this.setState({ paymentOptions: newPaymentOptions});
+    }
+  }
+
+  _renderPaymentOptions(paymentOptions) {
+    // old layout
+    // const jsx = paymentOptions.map((item, index) => {
+    //   const { type, selected, text, transId } = item;
+    //   return (
+    //     <ListItem key={type} selected={selected}
+    //       onPress={() => this._changePaymentType(type)} >
+    //       <Left>
+    //         <TextNB>+ {text}</TextNB>
+    //       </Left>
+    //       <Right>
+    //         <Radio selected={selected}
+    //           onPress={() => this._changePaymentType(type)} />
+    //       </Right>
+    //     </ListItem>
+    //   );
+    // });
+    // return jsx;
+
+    // new layout
+    const { orderDetail } = this.state;
+    const totalFee = _.get(orderDetail, "totalFee");
+    const selectedPayment = _.find(paymentOptions, { selected: true });
+
+    const { transId, status, qrData } = selectedPayment;
+    const selectedValue = _.get(selectedPayment, 'type');
+
+    const textStyle = {
+      color: "#000",
+      fontSize: 18,
+      marginVertical: 10,
+    };
+    
+    return (
+      <View>
+        <H3>- Phương thức thanh toán</H3>
+        <Picker
+          mode="dropdown"
+          iosIcon={<IconNB name="ios-arrow-down" />}
+          style={{ width: undefined }}
+          placeholder="Select your SIM"
+          placeholderStyle={{ color: "#bfc6ea" }}
+          placeholderIconColor="#007aff"
+          selectedValue={selectedValue} 
+          onValueChange={this._changePaymentType.bind(this)} >
+            {
+              paymentOptions.map((item, index) => {
+                const { type, selected, text, transId } = item;
+                return (
+                  <Item key={type} label={text} value={type} />
+                );
+              })
+            }
+        </Picker>
+        <View>
+          <H3>- Thông tin thanh toán</H3>
+          <View>
+            <Text style={textStyle}>{`+ Số tiền: ${totalFee}`}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  _renderPaymentQRCode(paymentOptions) {
+    const { orderDetail } = this.state;
+
+    const orderCode = _.get(orderDetail, "orderCode");
+    const totalFee = _.get(orderDetail, "totalFee");
+
+    const { CASH, MOMO, VNPAY } = this.state.paymentTypes;
+
+    paymentOptions = [ ... paymentOptions];
+    const selectedPayment = _.find(paymentOptions, { selected: true });
+    const paymentType = _.get(selectedPayment, 'type');
+    
+    const { transId, status, qrData } = selectedPayment;
+    
+    if(paymentType != CASH && (transId == undefined || transId == '')) {
+      const amount = totalFee;
+      const orderInfo = `Thanh toán cho đơn hàng ${orderCode}`;
+      // request payment
+      PaymentService.requestPayment(paymentType, amount, orderInfo).then(response => {
+        LoggerUtils.log('_renderPaymentQRCode:: requestPayment', 'data', JSON.stringify(response));
+        if(_.get(response, 'data.success') == true) {
+          const data = _.get(response, 'data.data');
+          const { transId, qrData } = data;
+          _.set(selectedPayment, 'transId', transId);
+          _.set(selectedPayment, 'qrData', qrData);
+          _.set(selectedPayment, 'status', 'Chờ thanh toán');
+          this.setState({ paymentOptions });
+        } else {
+          const data = _.get(response, 'data.data');
+          const errorCode = _.get(data, 'errorCode');
+          const params = _.get(data, 'params');
+          LoggerUtils.log('_renderPaymentQRCode:: requestPayment error', 
+            'errorCode', errorCode, 'params', JSON.stringify(params));
+        }
+      });
+    }
+    
+    const isPaymentByCash = paymentType == CASH;
+    const textStyle = {
+      color: "#000",
+      fontSize: 18,
+    };
+
+    LoggerUtils.log("_renderPaymentQRCode", 'paymentType', paymentType, 
+      'transId', transId, 'status', status, 'qrData', qrData);
+
+    return (
+      <View style={{
+        flex: 1,
+      }} >
+        { !isPaymentByCash && qrData != '' && qrData != undefined &&
+        <View style={{
+          flex: 1, 
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 10,
+        }}>
+          <QRCode
+            value={qrData}
+            size={200} />
+          <View style={{ flexDirection: 'column', marginTop: 10 }}>
+            <Text style={textStyle}>{`- Trạng thái: ${status}`}</Text>
+            <Text style={textStyle}>{`- Mã giao dịch: ${transId}`}</Text>
+          </View>
+        </View>
+        }
+      </View>
+    );
+  }
+
+  _setVisiblePaymentScreen(visible) {
+    this.setState({ showPayment: visible });
+  }
+
+  _renderPaymentScreen() {
+    const { paymentOptions } = this.state;
+    LoggerUtils.log('_renderPaymentScreen', 'paymentOptions', JSON.stringify(paymentOptions));
+
+    return (
+      <Container>
+        <Header style={{ backgroundColor: "#051B49"}}>
+          <Left style={{flex: 1}}>
+            <Button transparent onPress={() => this._setVisiblePaymentScreen(false)}>
+              <IconNB name="arrow-back" />
+            </Button>
+          </Left>
+          <Body style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
+            <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          </Body>
+          <Right style={{flex: 1}}>
+          </Right>
+        </Header>
+        <ViewNB padder style={{flex: 1}}>
+          {this._renderPaymentOptions(paymentOptions)}
+          {this._renderPaymentQRCode(paymentOptions)}
+          {/* <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Title style={{color: "#FFF"}}>Thanh toán</Title>
+          <Button primary full disabled style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            right: 0,
+          }}>
+            <Text>disabled</Text>
+          </Button> */}
+        </ViewNB>
+        {/* <Footer>
+          <FooterTab>
+            <Button disabled full style={{ backgroundColor : '#051B49'}}
+              onPress={() => {}}>
+              <Title style={{ color: '#FFF' }}>Hoàn thành</Title>
+            </Button>
+          </FooterTab>
+        </Footer> */}
+      </Container>
+    );
+  }
+  
   _deliverOrder = () => {
     const { orderDetail } = this.state;
-    const orderCode = _.get(orderDetail, "orderCode");
-    const orderStatus = 'FO_DELIVERED';
+    const orderCode = _.get(orderDetail, 'orderCode');
+    const orderType = _.get(orderDetail, 'orderType');
+    // const orderStatus = 'FO_DELIVERED';
+    const orderStatus = OrderStatusUtils.deliveredStatus(orderType);
 
     const hub = this._getCurrentHub(orderDetail);
     const hubCode = _.get(hub, 'code');
@@ -330,10 +693,11 @@ export default class App extends Component {
   }
 
   render() {
-    const { showStampScanner, showShelfScanner } = this.state;
+    const { showStampScanner, showShelfScanner, showPayment } = this.state;
     LoggerUtils.log('render OrderDetail', 
       'showStampScanner', showStampScanner, 
-      'showShelfScanner', showShelfScanner);
+      'showShelfScanner', showShelfScanner,
+      'showPayment', showPayment);
 
     if(showStampScanner) {
       return this._renderStampScanner();
@@ -341,7 +705,9 @@ export default class App extends Component {
     if(showShelfScanner) {
       return this._renderShelfScanner();
     }
-    
+    if(showPayment) {
+      return this._renderPaymentScreen();
+    }
     return this._renderMainScreen();
   }
 
@@ -534,7 +900,7 @@ export default class App extends Component {
       <Container>
         <Header style={{ backgroundColor: "#051B49"}}>
           <Left style={{flex: 1}}>
-            <Button transparent onPress={() => this.props.navigation.goBack()}>
+            <Button transparent onPress={() => NavigationUtils.goBack(this.props.navigation)}>
               <IconNB name="arrow-back" />
             </Button>
           </Left>
@@ -640,8 +1006,7 @@ export default class App extends Component {
                 </View>
               </View>
               { 
-                canAssignStamp && 
-                (
+                canAssignStamp && (
                   <View style={{
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -649,8 +1014,7 @@ export default class App extends Component {
                     <TouchableWithoutFeedback onPress={() => this._showScanner(ACTION_SCAN_STAMP) }>
                       <IconNB name="qr-scanner" color="#000" size={24} />
                     </TouchableWithoutFeedback>
-                  </View>
-                )
+                  </View> )
               }
             </View>
 

@@ -1,6 +1,9 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import moment from 'moment';
 
+import { LoggerUtils } from './Logger';
+import { timer } from './BackgroundProcesses';
+
 const StorageUtils = {
   write(key, value) {
     return AsyncStorage.setItem(key, value);
@@ -64,9 +67,11 @@ const NavigationUtils = {
   },
   navigateTo(navigation, screen, params) {
     LoggerUtils.log('navigateTo', 'screen', screen, 'params', JSON.stringify(params));
+    timer.stopAll();
     navigation.navigate(screen, params);
   },
   goBack(navigation) {
+    timer.stopAll();
     navigation.goBack();
   }
 };
@@ -75,13 +80,6 @@ const SCREENS = {
   LOGIN_SCREEN, HOME_SCREEN, ACCOUNT_SCREEN, ORDERS_SCREEN, ORDER_DETAIL_SCREEN,
   CUSTOMER_SCANNER_SCREEN, DRIVER_SCANNER_SCREEN, DRIVER_ORDERS_SCREEN,
   QRCODE_GENERATOR_SCREEN
-};
-
-
-const LoggerUtils = {
-  log(prefix, key1, param1, key2, param2, key3, param3, key4, param4, key5, param5) {
-    console.log(`${prefix}:: ${key1 != undefined? key1: ''}${param1 != undefined? ':: ' + param1: ''} ${key2 != undefined? '- ' + key2: ''}${param2 != undefined? ':: ' + param2: ''} ${key3 != undefined? '- ' + key3: ''}${param3 != undefined? ':: ' + param3: ''} ${key4 != undefined? '- ' + key4: ''}${param4 != undefined? ':: ' + param4: ''} ${key5 != undefined? '- ' + key5: ''}${param5 != undefined? ':: ' + param5: ''}`);
-  }
 };
 
 export { StorageUtils, DateTimeUtils, NavigationUtils, SCREENS, LoggerUtils };
